@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo BI | RYSE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js" defer></script>
+    <script src="./app.js" type="module" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="brand-row">
+            <div class="brand-logo-wrap">
+              <img src="./RYSE-Blanco_215x@2x.avif" alt="RYSE" class="brand-logo" />
+            </div>
+            <div>
+              <p class="kicker">RYSE</p>
+              <h1>Centro de Control</h1>
+            </div>
+          </div>
+          <div class="menu-section">
+            <p class="section-title">General</p>
+            <nav id="menu"></nav>
+          </div>
+        </div>
+          <div class="sidebar-bottom">
+            <div class="user-row">
+              <div class="user-box user-box-with-settings">
+                <div class="user-main">
+                  <div class="avatar">AG</div>
+                  <div>
+                    <p class="user-name">Andrés Guerra</p>
+                    <p class="user-role">Dirección General</p>
+                  </div>
+                </div>
+                <button type="button" class="settings-btn" aria-label="Configuración">
+                  <span aria-hidden="true">⚙</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button type="button" class="icon-menu-btn" id="mobile-menu-btn" aria-label="Abrir menú de navegación">
+              <span aria-hidden="true">☰</span>
+            </button>
+            <div>
+              <p class="kicker">Inteligencia de Negocio</p>
+              <h2 id="page-title">Dashboard Ejecutivo</h2>
+            </div>
+          </div>
+          <div class="top-actions">
+            <label class="top-control top-control-range" for="top-date-range">
+              <span>Fechas</span>
+              <input type="text" id="top-date-range" class="ghost ghost-date-range" placeholder="Seleccionar rango" aria-label="Rango de fechas" />
+            </label>
+            <button type="button" class="ghost" id="filter-toggle-btn">Filtro</button>
+            <button type="button" class="ghost" id="export-btn">Exportar</button>
+          </div>
+        </header>
+
+        <section id="filter-row" class="filter-row hidden"></section>
+        <section id="view" class="view"></section>
+      </main>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  </body>
+</html>
