@@ -456,15 +456,15 @@ select {
   border: 1px solid #d0e2ef;
   border-radius: 9px;
   background: #fbfdff;
-  padding: 8px 9px;
-  min-height: 52px;
+  padding: 6px 9px;
+  min-height: 42px;
 }
 
 .clear-filter {
   border: 1px dashed #b9d2e7;
   background: #f7fbff;
   border-radius: 9px;
-  min-height: 52px;
+  min-height: 42px;
   padding: 0 12px;
   color: #325677;
   cursor: pointer;
