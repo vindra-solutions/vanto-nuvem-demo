@@ -1111,11 +1111,11 @@ function commercialData(records, lyRecords, previousRecords = []) {
       marginPct: pct(v.margin, v.sales),
       discountPct: v.discount / Math.max(v.weight, 1),
       upliftPct: v.uplift / Math.max(v.weight, 1),
-      roi: v.roi / Math.max(v.weight, 1),
+      roi: round(v.roi / Math.max(v.weight, 1), 2),
     }))
     .sort((a, b) => b.roi - a.roi);
 
-  const promoStatusMap = rankStatuses(promoTableRaw, "roi", (item) => item.campaign);
+  const promoStatusMap = rankStatuses(promoTableRaw, "roi", (item) => item.campaign, { minSample: 3 });
   const promoTable = promoTableRaw.map((row) => ({
     ...row,
     status: promoStatusMap[row.campaign] || { label: "Amarillo", className: "kpi-mid" },
@@ -1200,7 +1200,7 @@ function commercialData(records, lyRecords, previousRecords = []) {
       score("Ventas Netas", formatCompactMXN(sales), trendPct(sales, lySales), "vs LY"),
       score("Órdenes / Tickets", formatInt(orders), trendPct(orders, sum(lyRecords, "orders")), "vs LY"),
       score("AOV", formatMXN(aov), trendPct(aov, previousAov), "vs periodo anterior"),
-      score("UPT", formatDecimal(upt, 1), trendPct(upt, previousUpt), "vs periodo anterior"),
+      score("UPT", formatDecimal(upt, 2), trendPct(upt, previousUpt), "vs periodo anterior"),
       score("Margen Bruto", formatPct(marginPct), trendPct(marginPct, previousMarginPct), "vs periodo anterior"),
       score("Descuento Promedio", formatPct(discount), trendLowerBetter(discount, previousDiscount), "menor es mejor"),
       score("Conversión e-comm", formatPct(conv), trendPct(conv, previousConv), "vs periodo anterior"),
@@ -1568,7 +1568,7 @@ function promoTable(rows) {
         <thead><tr><th>Campaña</th><th>Venta incremental</th><th>Margen %</th><th>Descuento %</th><th>ROI</th></tr></thead>
         <tbody>
           ${rows
-            .map((r) => `<tr><td>${r.campaign}</td><td>${formatCompactMXN(r.incremental)}</td><td>${formatPct(r.marginPct)}</td><td>${formatPct(r.discountPct)}</td><td class="${r.status.className}">${formatDecimal(r.roi, 1)}x</td></tr>`)
+            .map((r) => `<tr><td>${r.campaign}</td><td>${formatCompactMXN(r.incremental)}</td><td>${formatPct(r.marginPct)}</td><td>${formatPct(r.discountPct)}</td><td class="${r.status.className}">${formatDecimal(r.roi, 2)}x</td></tr>`)
             .join("")}
         </tbody>
       </table>
@@ -1848,7 +1848,7 @@ function promoScatter(id, points) {
     tooltip: {
       formatter: (params) => {
         const [discount, uplift, roi, incremental] = params.value;
-        return `${params.name}<br/>Descuento: ${formatMetricValue(discount, "percent", "tooltip")}<br/>Uplift: ${formatMetricValue(uplift, "percent", "tooltip")}<br/>ROI: ${formatMetricValue(roi, "ratio", "tooltip")}x<br/>Venta incremental: ${formatCompactMXN(incremental)}`;
+        return `${params.name}<br/>Descuento: ${formatMetricValue(discount, "percent", "tooltip")}<br/>Uplift: ${formatMetricValue(uplift, "percent", "tooltip")}<br/>ROI: ${formatMetricValue(roi, "ratio", "tooltip", 2)}x<br/>Venta incremental: ${formatCompactMXN(incremental)}`;
       },
     },
     grid: { left: 16, right: 16, top: 28, bottom: 44, containLabel: true },
@@ -2243,23 +2243,24 @@ function formatAxisValue(value) {
   return formatCompactNumber(value, 2);
 }
 
-function formatMetricValue(value, type = "count", scope = "default") {
+function formatMetricValue(value, type = "count", scope = "default", decimalsOverride = null) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return String(value ?? "");
   const abs = Math.abs(numeric);
+  const useDecimals = (fallback) => (Number.isFinite(decimalsOverride) ? decimalsOverride : fallback);
 
   if (type === "currency") {
-    return scope === "axis" ? formatCompactNumber(numeric, 2) : formatCompactMXN(numeric);
+    return scope === "axis" ? formatCompactNumber(numeric, useDecimals(2)) : formatCompactMXN(numeric);
   }
-  if (type === "percent") return `${formatDecimal(numeric, 1)}%`;
-  if (type === "ratio") return formatDecimal(numeric, 1);
-  if (type === "days") return formatDecimal(numeric, 1);
-  if (type === "compact") return formatCompactNumber(numeric, 2);
+  if (type === "percent") return `${formatDecimal(numeric, useDecimals(1))}%`;
+  if (type === "ratio") return formatDecimal(numeric, useDecimals(1));
+  if (type === "days") return formatDecimal(numeric, useDecimals(1));
+  if (type === "compact") return formatCompactNumber(numeric, useDecimals(2));
   if (type === "count") {
     if (abs < 1000) return formatInt(Math.round(numeric));
-    return formatCompactNumber(numeric, scope === "axis" ? 1 : 2);
+    return formatCompactNumber(numeric, scope === "axis" ? useDecimals(1) : useDecimals(2));
   }
-  return scope === "axis" ? formatCompactNumber(numeric, 1) : formatCompactNumber(numeric, 2);
+  return scope === "axis" ? formatCompactNumber(numeric, useDecimals(1)) : formatCompactNumber(numeric, useDecimals(2));
 }
 
 function axisLabelInterval(labels, targetTicks = 12) {
@@ -2278,8 +2279,16 @@ function normalize(value, min, max) {
   return clamp((value - min) / (max - min), 0, 1);
 }
 
-function rankStatuses(rows, scoreField, keyGetter = (row) => row.name) {
+function rankStatuses(rows, scoreField, keyGetter = (row) => row.name, options = {}) {
   if (!rows.length) return {};
+  const minSample = Number.isFinite(options.minSample) ? options.minSample : 3;
+  if (rows.length < minSample) {
+    const fallback = {};
+    rows.forEach((row) => {
+      fallback[keyGetter(row)] = { label: "Amarillo", className: "kpi-mid" };
+    });
+    return fallback;
+  }
   const scores = rows.map((row) => row[scoreField] || 0);
   const p30 = percentile(scores, 0.3);
   const p70 = percentile(scores, 0.7);
