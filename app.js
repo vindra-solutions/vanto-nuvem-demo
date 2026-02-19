@@ -639,23 +639,27 @@ function renderExecutive() {
     </section>
   `;
 
-  lineChart("exec-sales-trend", data.weekLabels, [
-    { name: "Ventas", data: data.weekSales, color: palette[0] },
-  ]);
+  lineChart(
+    "exec-sales-trend",
+    data.weekLabels,
+    [{ name: "Ventas", data: data.weekSales, color: palette[0] }],
+    { valueType: "currency" },
+  );
 
-  barLineChart("exec-vs-target", data.weekLabels, data.weekSales, data.weekTarget);
+  barLineChart("exec-vs-target", data.weekLabels, data.weekSales, data.weekTarget, { valueType: "currency" });
 
   horizontalBar(
     "exec-margin-category",
     data.marginByCategory.map((d) => d.name),
     data.marginByCategory.map((d) => d.value),
     "% margen",
+    { fitToDataMax: true, valueType: "percent" },
   );
 
   stackedBar("exec-mix-channel", data.weekLabels, [
     { name: "Tienda", data: data.mixStore, color: chartColors.navy },
     { name: "E-commerce", data: data.mixEcom, color: chartColors.primary },
-  ]);
+  ], { valueType: "currency" });
 
   renderMexicoMap("exec-map", data.stateMap);
 }
@@ -726,6 +730,7 @@ function renderCommercial() {
     data.categoryTop.map((d) => d.name),
     data.categoryTop.map((d) => d.value),
     "Ventas",
+    { valueType: "currency" },
   );
   heatmapChart("com-heatmap", data.heatmapStores, data.heatmapCategories, data.heatmapValues);
   promoScatter("com-promo-scatter", data.promoScatter);
@@ -794,15 +799,15 @@ function renderLogistics() {
     { name: "OTD", data: data.weekOTD, color: palette[0] },
     { name: "OTIF", data: data.weekOTIF, color: palette[1] },
     { name: "Meta SLA", data: data.weekSLA, color: chartColors.yellow },
-  ]);
+  ], { valueType: "percent" });
 
-  verticalBar("log-delays-carrier", data.carrierDelay.map((d) => d.name), data.carrierDelay.map((d) => d.value));
-  verticalBar("log-lead-hist", data.leadBins.map((d) => d.bin), data.leadBins.map((d) => d.count));
+  verticalBar("log-delays-carrier", data.carrierDelay.map((d) => d.name), data.carrierDelay.map((d) => d.value), { valueType: "count" });
+  verticalBar("log-lead-hist", data.leadBins.map((d) => d.bin), data.leadBins.map((d) => d.count), { valueType: "count" });
   stackedBar("log-inventory-cat", data.inventoryByCategory.map((d) => d.category), [
     { name: "Disponible", data: data.inventoryByCategory.map((d) => d.available), color: chartColors.green },
     { name: "Comprometido", data: data.inventoryByCategory.map((d) => d.committed), color: chartColors.yellow },
     { name: "Tránsito", data: data.inventoryByCategory.map((d) => d.transit), color: chartColors.navy },
-  ]);
+  ], { valueType: "count" });
 
   paretoChart("log-pareto", data.paretoSkus);
   stackedBar("log-status", data.statusByWeek.map((d) => d.week), [
@@ -811,7 +816,7 @@ function renderLogistics() {
     { name: "Embarcado", data: data.statusByWeek.map((d) => d.shipped), color: chartColors.navy },
     { name: "Entregado", data: data.statusByWeek.map((d) => d.delivered), color: chartColors.green },
     { name: "Devuelto", data: data.statusByWeek.map((d) => d.returned), color: chartColors.red },
-  ]);
+  ], { valueType: "count" });
 }
 
 function renderHR() {
@@ -870,15 +875,15 @@ function renderHR() {
     </section>
   `;
 
-  horizontalBar("hr-turnover-store", data.turnoverByStore.map((d) => d.name), data.turnoverByStore.map((d) => d.value), "% rotación");
-  lineChart("hr-absent-trend", data.weekLabels, [{ name: "Ausentismo", data: data.absentTrend, color: palette[0] }]);
+  horizontalBar("hr-turnover-store", data.turnoverByStore.map((d) => d.name), data.turnoverByStore.map((d) => d.value), "% rotación", { valueType: "percent" });
+  lineChart("hr-absent-trend", data.weekLabels, [{ name: "Ausentismo", data: data.absentTrend, color: palette[0] }], { valueType: "percent" });
   groupedBar("hr-plan-vs-current", data.planVsCurrent.map((d) => d.week), [
     { name: "Plan", data: data.planVsCurrent.map((d) => d.plan), color: chartColors.neutral },
     { name: "Actual", data: data.planVsCurrent.map((d) => d.current), color: chartColors.navy },
-  ]);
+  ], { valueType: "count" });
   funnelChart("hr-vacancy-funnel", data.vacancyFunnel);
-  verticalBar("hr-overtime-area", data.overtimeByArea.map((d) => d.area), data.overtimeByArea.map((d) => d.hours));
-  verticalBar("hr-productivity", data.productivity.map((d) => d.store), data.productivity.map((d) => d.value));
+  verticalBar("hr-overtime-area", data.overtimeByArea.map((d) => d.area), data.overtimeByArea.map((d) => d.hours), { valueType: "count" });
+  verticalBar("hr-productivity", data.productivity.map((d) => d.store), data.productivity.map((d) => d.value), { valueType: "currency" });
 }
 
 function executiveData(records, lyRecords, previousRecords = []) {
@@ -985,13 +990,13 @@ function executiveData(records, lyRecords, previousRecords = []) {
   return {
     objective: DASHBOARDS[0].objective,
     scorecards: [
-      score("Ventas Netas (MXN)", formatMXN(sales), trendPct(sales, lySales), "vs LY"),
+      score("Ventas Netas (MXN)", formatCompactMXN(sales), trendPct(sales, lySales), "vs LY"),
       score("Margen Bruto % / $", `${formatPct(marginPct)} · ${formatCompactMXN(margin)}`, trendPct(marginPct, previousMarginPct), "vs periodo anterior"),
-      score("EBITDA", formatMXN(ebitda), trendPct(ebitda, lySales * 0.145), "vs LY"),
+      score("EBITDA", formatCompactMXN(ebitda), trendPct(ebitda, lySales * 0.145), "vs LY"),
       score("Órdenes e-comm", formatInt(ordersEcom), trendPct(ordersEcom, sum(lyRecords.filter((r) => r.channel === "E-commerce"), "orders")), "vs LY"),
       score("Ticket Promedio (AOV)", formatMXN(aov), trendPct(aov, previousAov), "vs periodo anterior"),
       score("Fill Rate", formatPct(fill), trendPct(fill, previousFill), "vs periodo anterior"),
-      score("Días de Inventario (DOH)", `${doh.toFixed(1)} días`, trendLowerBetter(doh, previousDoh), "menor es mejor"),
+      score("Días de Inventario (DOH)", `${formatDecimal(doh, 1)} días`, trendLowerBetter(doh, previousDoh), "menor es mejor"),
       score("OTD", formatPct(otd), trendPct(otd, previousOtd), "vs periodo anterior"),
     ],
     weekLabels,
@@ -1192,10 +1197,10 @@ function commercialData(records, lyRecords, previousRecords = []) {
   return {
     objective: DASHBOARDS[1].objective,
     scorecards: [
-      score("Ventas Netas", formatMXN(sales), trendPct(sales, lySales), "vs LY"),
+      score("Ventas Netas", formatCompactMXN(sales), trendPct(sales, lySales), "vs LY"),
       score("Órdenes / Tickets", formatInt(orders), trendPct(orders, sum(lyRecords, "orders")), "vs LY"),
       score("AOV", formatMXN(aov), trendPct(aov, previousAov), "vs periodo anterior"),
-      score("UPT", round(upt, 2), trendPct(upt, previousUpt), "vs periodo anterior"),
+      score("UPT", formatDecimal(upt, 1), trendPct(upt, previousUpt), "vs periodo anterior"),
       score("Margen Bruto", formatPct(marginPct), trendPct(marginPct, previousMarginPct), "vs periodo anterior"),
       score("Descuento Promedio", formatPct(discount), trendLowerBetter(discount, previousDiscount), "menor es mejor"),
       score("Conversión e-comm", formatPct(conv), trendPct(conv, previousConv), "vs periodo anterior"),
@@ -1351,8 +1356,8 @@ function logisticsData(records, previousRecords = []) {
       score("Fill Rate", formatPct(fill), trendPct(fill, previousFill), "vs periodo anterior"),
       score("Backorder", `${formatInt(backorders)} (${formatPct(backorderPct)})`, trendLowerBetter(backorderPct, previousBackorderPct), "menor es mejor"),
       score("Stockout Rate", formatPct(stockout), trendLowerBetter(stockout, previousStockout), "menor es mejor"),
-      score("Inventario Total", formatMXN(inventory), trendPct(inventory, previousInventory), "vs periodo anterior"),
-      score("DOH", `${round(doh, 1)} días`, trendLowerBetter(doh, previousDoh), "menor es mejor"),
+      score("Inventario Total", formatCompactMXN(inventory), trendPct(inventory, previousInventory), "vs periodo anterior"),
+      score("DOH", `${formatDecimal(doh, 1)} días`, trendLowerBetter(doh, previousDoh), "menor es mejor"),
       score("Costo logístico/orden", formatMXN(costPerOrder), trendLowerBetter(costPerOrder, previousCostPerOrder), "menor es mejor"),
     ],
     weekLabels,
@@ -1488,10 +1493,10 @@ function hrData(records, hrRecords, previousRecords = [], previousHR = []) {
       score("Headcount actual", formatInt(headcount), trendPct(headcount, previousHeadcount), "vs periodo anterior"),
       score("Vacantes abiertas", formatInt(vacancies), trendLowerBetter(vacancies, previousVacancies), "menor es mejor"),
       score("Rotación", formatPct(turnover), trendLowerBetter(turnover, previousTurnover), "menor es mejor"),
-      score("Tiempo de cobertura", `${round(daysToFill, 1)} días`, trendLowerBetter(daysToFill, previousDaysToFill), "menor es mejor"),
+      score("Tiempo de cobertura", `${formatDecimal(daysToFill, 1)} días`, trendLowerBetter(daysToFill, previousDaysToFill), "menor es mejor"),
       score("Ausentismo", formatPct(absenteeism), trendLowerBetter(absenteeism, previousAbsenteeism), "menor es mejor"),
       score("Horas extra", `${formatInt(overtimeHours)} hrs / ${formatMXN(overtimeCost)}`, trendLowerBetter(overtimeHours, previousOvertimeHours), "menor es mejor"),
-      score("Costo laboral total", formatMXN(laborCost), trendPct(laborCost, previousLaborCost), "vs periodo anterior"),
+      score("Costo laboral total", formatCompactMXN(laborCost), trendPct(laborCost, previousLaborCost), "vs periodo anterior"),
       score("Costo laboral / ventas", formatPct(laborVsSales), trendLowerBetter(laborVsSales, previousLaborVsSales), "menor es mejor"),
     ],
     turnoverByStore,
@@ -1548,7 +1553,7 @@ function topStoresTable(rows) {
         <thead><tr><th>#</th><th>Tienda</th><th>Ventas</th><th>Margen %</th><th>OTD</th><th>Crec. LY</th><th>Semáforo</th></tr></thead>
         <tbody>
           ${rows
-            .map((r, i) => `<tr><td>${i + 1}</td><td>${r.name}</td><td>${formatMXN(r.sales)}</td><td>${formatPct(r.marginPct)}</td><td>${formatPct(r.otd)}</td><td>${formatTrend(r.growthPct)}</td><td class="${r.status.className}">${r.status.label}</td></tr>`)
+            .map((r, i) => `<tr><td>${i + 1}</td><td>${r.name}</td><td>${formatCompactMXN(r.sales)}</td><td>${formatPct(r.marginPct)}</td><td>${formatPct(r.otd)}</td><td>${formatTrend(r.growthPct)}</td><td class="${r.status.className}">${r.status.label}</td></tr>`)
             .join("")}
         </tbody>
       </table>
@@ -1563,7 +1568,7 @@ function promoTable(rows) {
         <thead><tr><th>Campaña</th><th>Venta incremental</th><th>Margen %</th><th>Descuento %</th><th>ROI</th></tr></thead>
         <tbody>
           ${rows
-            .map((r) => `<tr><td>${r.campaign}</td><td>${formatMXN(r.incremental)}</td><td>${formatPct(r.marginPct)}</td><td>${formatPct(r.discountPct)}</td><td class="${r.status.className}">${round(r.roi, 2)}x</td></tr>`)
+            .map((r) => `<tr><td>${r.campaign}</td><td>${formatCompactMXN(r.incremental)}</td><td>${formatPct(r.marginPct)}</td><td>${formatPct(r.discountPct)}</td><td class="${r.status.className}">${formatDecimal(r.roi, 1)}x</td></tr>`)
             .join("")}
         </tbody>
       </table>
@@ -1598,7 +1603,7 @@ function productsTable(rows) {
           ${rows
             .map((r) => {
               const cls = r.status === "Estrella" ? "kpi-ok" : r.status === "Problema" ? "kpi-bad" : "kpi-mid";
-              return `<tr><td>${r.sku}</td><td>${formatMXN(r.sales)}</td><td>${formatPct(r.marginP)}</td><td>${round(r.rotation, 2)}</td><td>${formatPct(r.returnsP)}</td><td class="${cls}">${r.status}</td></tr>`;
+              return `<tr><td>${r.sku}</td><td>${formatCompactMXN(r.sales)}</td><td>${formatPct(r.marginP)}</td><td>${formatDecimal(r.rotation, 1)}</td><td>${formatPct(r.returnsP)}</td><td class="${cls}">${r.status}</td></tr>`;
             })
             .join("")}
         </tbody>
@@ -1614,7 +1619,7 @@ function agingTable(rows) {
         <thead><tr><th>Rango</th><th>Valor inventario</th><th>%</th></tr></thead>
         <tbody>
           ${rows
-            .map((r) => `<tr><td>${r.range} días</td><td>${formatMXN(r.value)}</td><td>${formatPct(pct(r.value, sum(rows, "value")))}</td></tr>`)
+            .map((r) => `<tr><td>${r.range} días</td><td>${formatCompactMXN(r.value)}</td><td>${formatPct(pct(r.value, sum(rows, "value")))}</td></tr>`)
             .join("")}
         </tbody>
       </table>
@@ -1629,7 +1634,7 @@ function skuRiskTable(rows) {
         <thead><tr><th>SKU</th><th>Días sin stock</th><th>Demanda promedio</th><th>Venta perdida est.</th></tr></thead>
         <tbody>
           ${rows
-            .map((r) => `<tr><td>${r.sku}</td><td>${round(r.days, 1)}</td><td>${formatInt(r.demand)}</td><td>${formatMXN(r.lost)}</td></tr>`)
+            .map((r) => `<tr><td>${r.sku}</td><td>${formatDecimal(r.days, 1)}</td><td>${formatInt(r.demand)}</td><td>${formatCompactMXN(r.lost)}</td></tr>`)
             .join("")}
         </tbody>
       </table>
@@ -1655,25 +1660,35 @@ function trainingTable(rows) {
   `;
 }
 
-function lineChart(id, labels, series) {
+function lineChart(id, labels, series, options = {}) {
   const labelInterval = axisLabelInterval(labels);
+  const valueType = options.valueType || "count";
   mountChart(id, {
     color: series.map((s) => s.color),
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", valueFormatter: (value) => formatMetricValue(value, valueType, "tooltip") },
     grid: { left: 52, right: 20, top: 20, bottom: 36, containLabel: true },
     xAxis: { type: "category", data: labels, axisLabel: { color: "#5f7895", interval: labelInterval } },
-    yAxis: { type: "value", axisLabel: { color: "#5f7895", formatter: (v) => formatAxisValue(v) }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, valueType, "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     series: series.map((s) => ({ name: s.name, type: "line", smooth: true, data: s.data, lineStyle: { width: 2.4 } })),
   });
 }
 
-function barLineChart(id, labels, bars, line) {
+function barLineChart(id, labels, bars, line, options = {}) {
   const labelInterval = axisLabelInterval(labels);
+  const valueType = options.valueType || "count";
   mountChart(id, {
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", valueFormatter: (value) => formatMetricValue(value, valueType, "tooltip") },
     grid: { left: 52, right: 16, top: 20, bottom: 36, containLabel: true },
     xAxis: { type: "category", data: labels, axisLabel: { color: "#5f7895", rotate: 24, interval: labelInterval } },
-    yAxis: { type: "value", axisLabel: { color: "#5f7895", formatter: (v) => formatAxisValue(v) }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, valueType, "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     series: [
       { type: "bar", name: "Ventas", data: bars, itemStyle: { color: chartColors.primary, borderRadius: 8 } },
       { type: "line", name: "Meta", data: line, smooth: true, lineStyle: { width: 2.4, color: chartColors.yellow } },
@@ -1681,47 +1696,71 @@ function barLineChart(id, labels, bars, line) {
   });
 }
 
-function horizontalBar(id, labels, values, name) {
+function horizontalBar(id, labels, values, name, options = {}) {
+  const numericValues = values.map((value) => Number(value)).filter((value) => Number.isFinite(value));
+  const dataMax = numericValues.length ? Math.max(...numericValues) : 0;
+  const valueType = options.valueType || "count";
+
   mountChart(id, {
-    tooltip: { trigger: "axis" },
-    grid: { left: 96, right: 18, top: 18, bottom: 24, containLabel: true },
-    xAxis: { type: "value", axisLabel: { color: "#5f7895", formatter: (v) => formatAxisValue(v) }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    tooltip: { trigger: "axis", valueFormatter: (value) => formatMetricValue(value, valueType, "tooltip") },
+    grid: { left: 20, right: 10, top: 18, bottom: 24, containLabel: true },
+    xAxis: {
+      type: "value",
+      ...(options.fitToDataMax && dataMax > 0 ? { max: dataMax } : {}),
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, valueType, "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     yAxis: { type: "category", data: labels, axisLabel: { color: "#486683", fontSize: 11 } },
     series: [{ name, type: "bar", data: values, itemStyle: { color: chartColors.navy, borderRadius: [0, 7, 7, 0] } }],
   });
 }
 
-function verticalBar(id, labels, values) {
+function verticalBar(id, labels, values, options = {}) {
   const labelInterval = axisLabelInterval(labels);
+  const valueType = options.valueType || "count";
   mountChart(id, {
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", valueFormatter: (value) => formatMetricValue(value, valueType, "tooltip") },
     grid: { left: 16, right: 16, top: 16, bottom: 42, containLabel: true },
     xAxis: { type: "category", data: labels, axisLabel: { color: "#5f7895", rotate: 20, interval: labelInterval } },
-    yAxis: { type: "value", axisLabel: { color: "#5f7895", formatter: (v) => formatAxisValue(v) }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, valueType, "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     series: [{ type: "bar", data: values, itemStyle: { color: chartColors.primary, borderRadius: [7, 7, 0, 0] } }],
   });
 }
 
-function stackedBar(id, labels, series) {
+function stackedBar(id, labels, series, options = {}) {
   const labelInterval = axisLabelInterval(labels);
+  const valueType = options.valueType || "count";
   mountChart(id, {
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, valueFormatter: (value) => formatMetricValue(value, valueType, "tooltip") },
     legend: { top: 2, textStyle: { color: "#56718f", fontSize: 11 } },
     grid: { left: 16, right: 16, top: 36, bottom: 36, containLabel: true },
     xAxis: { type: "category", data: labels, axisLabel: { color: "#5f7895", rotate: 20, interval: labelInterval } },
-    yAxis: { type: "value", axisLabel: { color: "#5f7895", formatter: (v) => formatAxisValue(v) }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, valueType, "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     series: series.map((s) => ({ name: s.name, type: "bar", stack: "total", data: s.data, itemStyle: { color: s.color } })),
   });
 }
 
-function groupedBar(id, labels, series) {
+function groupedBar(id, labels, series, options = {}) {
   const labelInterval = axisLabelInterval(labels);
+  const valueType = options.valueType || "count";
   mountChart(id, {
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", valueFormatter: (value) => formatMetricValue(value, valueType, "tooltip") },
     legend: { top: 2, textStyle: { color: "#56718f", fontSize: 11 } },
     grid: { left: 16, right: 16, top: 36, bottom: 36, containLabel: true },
     xAxis: { type: "category", data: labels, axisLabel: { color: "#5f7895", rotate: 20, interval: labelInterval } },
-    yAxis: { type: "value", axisLabel: { color: "#5f7895", formatter: (v) => formatAxisValue(v) }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, valueType, "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     series: series.map((s) => ({ name: s.name, type: "bar", data: s.data, itemStyle: { color: s.color, borderRadius: [6, 6, 0, 0] } })),
   });
 }
@@ -1790,11 +1829,17 @@ function heatmapChart(id, stores, categories, values) {
   }));
 
   mountChart(id, {
-    tooltip: { position: "top" },
+    tooltip: {
+      position: "top",
+      formatter: (params) => {
+        const [categoryIndex, storeIndex, variation] = params.data.value;
+        return `${stores[storeIndex]} / ${categories[categoryIndex]}<br/>Variación: ${formatMetricValue(variation, "percent", "tooltip")}`;
+      },
+    },
     grid: { left: 18, right: 18, top: 20, bottom: 44, containLabel: true },
     xAxis: { type: "category", data: categories, axisLabel: { color: "#5f7895", rotate: 20, margin: 16 } },
     yAxis: { type: "category", data: stores, axisLabel: { color: "#5f7895", margin: 10 } },
-    series: [{ type: "heatmap", data: heatData, label: { show: true, formatter: (p) => `${p.data.value[2]}%`, fontSize: 10 } }],
+    series: [{ type: "heatmap", data: heatData, label: { show: true, formatter: (p) => formatMetricValue(p.data.value[2], "percent", "tooltip"), fontSize: 10 } }],
   });
 }
 
@@ -1803,12 +1848,20 @@ function promoScatter(id, points) {
     tooltip: {
       formatter: (params) => {
         const [discount, uplift, roi, incremental] = params.value;
-        return `${params.name}<br/>Descuento: ${discount}%<br/>Uplift: ${uplift}%<br/>ROI: ${roi}x<br/>Venta incremental: ${formatMXN(incremental)}`;
+        return `${params.name}<br/>Descuento: ${formatMetricValue(discount, "percent", "tooltip")}<br/>Uplift: ${formatMetricValue(uplift, "percent", "tooltip")}<br/>ROI: ${formatMetricValue(roi, "ratio", "tooltip")}x<br/>Venta incremental: ${formatCompactMXN(incremental)}`;
       },
     },
     grid: { left: 16, right: 16, top: 28, bottom: 44, containLabel: true },
-    xAxis: { type: "value", axisLabel: { color: "#5f7895" }, splitLine: { lineStyle: { color: "#e4edf6" } } },
-    yAxis: { type: "value", axisLabel: { color: "#5f7895" }, splitLine: { lineStyle: { color: "#e4edf6" } } },
+    xAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, "percent", "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, "percent", "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
     series: [
       {
         type: "scatter",
@@ -1823,7 +1876,7 @@ function promoScatter(id, points) {
 function scatterMapProxy(id, points) {
   mountChart(id, {
     tooltip: {
-      formatter: (params) => `${params.name}<br/>${formatMXN(params.value[2])}`,
+      formatter: (params) => `${params.name}<br/>${formatCompactMXN(params.value[2])}`,
     },
     xAxis: {
       type: "value",
@@ -1911,7 +1964,7 @@ function mexicoMapChart(id, points) {
   mountChart(id, {
     tooltip: {
       trigger: "item",
-      formatter: (params) => `${params.name}<br/>${params.value ? formatMXN(params.value) : "Sin datos"}`,
+      formatter: (params) => `${params.name}<br/>${params.value ? formatCompactMXN(params.value) : "Sin datos"}`,
     },
     series: [
       {
@@ -1952,7 +2005,22 @@ function mexicoMapChart(id, points) {
 
 function paretoChart(id, rows) {
   mountChart(id, {
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params) => {
+        const rowsData = Array.isArray(params) ? params : [params];
+        const title = rowsData[0]?.axisValueLabel || rowsData[0]?.name || "";
+        const lines = [title];
+        rowsData.forEach((entry) => {
+          if (entry.seriesName === "% acumulado") {
+            lines.push(`${entry.marker}${entry.seriesName}: ${formatMetricValue(entry.value, "percent", "tooltip")}`);
+            return;
+          }
+          lines.push(`${entry.marker}${entry.seriesName}: ${formatMetricValue(entry.value, "currency", "tooltip")}`);
+        });
+        return lines.join("<br/>");
+      },
+    },
     legend: { top: 2, textStyle: { color: "#56718f", fontSize: 11 } },
     grid: { left: 44, right: 42, top: 34, bottom: 50 },
     xAxis: {
@@ -1961,8 +2029,19 @@ function paretoChart(id, rows) {
       axisLabel: { color: "#5f7895", rotate: 35, fontSize: 10 },
     },
     yAxis: [
-      { type: "value", name: "Inventario", axisLabel: { color: "#5f7895" }, splitLine: { lineStyle: { color: "#e4edf6" } } },
-      { type: "value", name: "% acum", min: 0, max: 100, axisLabel: { color: "#5f7895", formatter: "{value}%" } },
+      {
+        type: "value",
+        name: "Inventario",
+        axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, "currency", "axis") },
+        splitLine: { lineStyle: { color: "#e4edf6" } },
+      },
+      {
+        type: "value",
+        name: "% acum",
+        min: 0,
+        max: 100,
+        axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, "percent", "axis") },
+      },
     ],
     series: [
       { name: "Valor inventario", type: "bar", data: rows.map((r) => r.value), itemStyle: { color: chartColors.navy, borderRadius: [6, 6, 0, 0] } },
@@ -2132,25 +2211,55 @@ function formatMXN(value) {
 }
 
 function formatCompactMXN(value) {
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-    notation: "compact",
-    compactDisplay: "short",
-    maximumFractionDigits: 1,
-  }).format(value || 0);
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "$0";
+  const sign = numeric < 0 ? "-" : "";
+  const abs = Math.abs(numeric);
+  if (abs < 1000) return formatMXN(numeric);
+  return `${sign}$${formatCompactNumber(abs, 2)}`;
 }
 
 function formatInt(value) {
   return new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(value || 0);
 }
 
+function formatDecimal(value, decimals = 1) {
+  return new Intl.NumberFormat("es-MX", { maximumFractionDigits: decimals }).format(value || 0);
+}
+
+function formatCompactNumber(value, decimals = 2) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "0";
+  const abs = Math.abs(numeric);
+  const sign = numeric < 0 ? "-" : "";
+
+  if (abs >= 1_000_000_000) return `${sign}${formatDecimal(abs / 1_000_000_000, decimals)}B`;
+  if (abs >= 1_000_000) return `${sign}${formatDecimal(abs / 1_000_000, decimals)}M`;
+  if (abs >= 1_000) return `${sign}${formatDecimal(abs / 1_000, decimals)}k`;
+  return `${sign}${formatDecimal(abs, abs >= 100 ? 0 : 1)}`;
+}
+
 function formatAxisValue(value) {
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000_000) return `${round(value / 1_000_000_000, 1)}B`;
-  if (abs >= 1_000_000) return `${round(value / 1_000_000, 1)}M`;
-  if (abs >= 1_000) return `${round(value / 1_000, 0)}k`;
-  return formatInt(value);
+  return formatCompactNumber(value, 2);
+}
+
+function formatMetricValue(value, type = "count", scope = "default") {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return String(value ?? "");
+  const abs = Math.abs(numeric);
+
+  if (type === "currency") {
+    return scope === "axis" ? formatCompactNumber(numeric, 2) : formatCompactMXN(numeric);
+  }
+  if (type === "percent") return `${formatDecimal(numeric, 1)}%`;
+  if (type === "ratio") return formatDecimal(numeric, 1);
+  if (type === "days") return formatDecimal(numeric, 1);
+  if (type === "compact") return formatCompactNumber(numeric, 2);
+  if (type === "count") {
+    if (abs < 1000) return formatInt(Math.round(numeric));
+    return formatCompactNumber(numeric, scope === "axis" ? 1 : 2);
+  }
+  return scope === "axis" ? formatCompactNumber(numeric, 1) : formatCompactNumber(numeric, 2);
 }
 
 function axisLabelInterval(labels, targetTicks = 12) {
