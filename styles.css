@@ -321,7 +321,8 @@ select {
   letter-spacing: 0.05em;
 }
 
-.icon-menu-btn {
+.floating-menu-btn,
+.sidebar-close-btn {
   width: 40px;
   height: 40px;
   border: 1px solid #c6daed;
@@ -334,12 +335,24 @@ select {
   cursor: pointer;
 }
 
-.icon-menu-btn:hover {
+.floating-menu-btn:hover,
+.sidebar-close-btn:hover {
   background: #eef6ff;
 }
 
-.mobile-menu-btn {
-  display: none;
+.floating-menu-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 12px;
+  z-index: 42;
+  box-shadow: 0 8px 20px rgba(10, 36, 62, 0.22);
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: 12px;
+  z-index: 3;
 }
 
 .ghost {
@@ -827,6 +840,7 @@ select {
     top: 0;
     width: min(86vw, 320px);
     height: 100dvh;
+    padding-top: 60px;
     transform: translateX(-104%);
     transition: transform 0.24s ease;
     border-right: 1px solid var(--line);
@@ -843,12 +857,19 @@ select {
     pointer-events: auto;
   }
 
-  .icon-menu-btn {
+  .floating-menu-btn,
+  .sidebar-close-btn {
     display: grid;
+  }
+
+  body.sidebar-open .floating-menu-btn {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .main {
     padding: 12px;
+    padding-top: 68px;
   }
 
   .topbar {
@@ -879,7 +900,7 @@ select {
 }
 
 @media (max-width: 700px) {
-  .main { padding: 10px; gap: 10px; }
+  .main { padding: 10px; padding-top: 64px; gap: 10px; }
   .topbar {
     flex-direction: column;
     align-items: flex-start;

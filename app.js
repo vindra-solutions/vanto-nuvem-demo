@@ -81,6 +81,7 @@ const filterToggleBtn = document.getElementById("filter-toggle-btn");
 const exportBtn = document.getElementById("export-btn");
 const sidebarOverlayEl = document.getElementById("sidebar-overlay");
 const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+const sidebarCloseBtn = document.getElementById("sidebar-close-btn");
 const mobileQuery = window.matchMedia("(max-width: 1024px)");
 let lockedScrollY = 0;
 
@@ -165,6 +166,10 @@ function initSidebar() {
     toggleSidebar();
   });
 
+  sidebarCloseBtn?.addEventListener("click", () => {
+    closeSidebar();
+  });
+
   sidebarOverlayEl?.addEventListener("click", () => {
     closeSidebar();
   });
@@ -182,11 +187,15 @@ function openSidebar() {
   if (!isMobileViewport() || document.body.classList.contains("sidebar-open")) return;
   lockedScrollY = window.scrollY || window.pageYOffset || 0;
   document.body.classList.add("sidebar-open");
+  if (mobileMenuBtn) mobileMenuBtn.setAttribute("aria-expanded", "true");
   document.body.style.position = "fixed";
   document.body.style.top = `-${lockedScrollY}px`;
   document.body.style.left = "0";
   document.body.style.right = "0";
   document.body.style.width = "100%";
+  requestAnimationFrame(() => {
+    sidebarCloseBtn?.focus();
+  });
 }
 
 function toggleSidebar() {
@@ -200,12 +209,20 @@ function toggleSidebar() {
 function closeSidebar() {
   const wasOpen = document.body.classList.contains("sidebar-open");
   document.body.classList.remove("sidebar-open");
+  if (mobileMenuBtn) mobileMenuBtn.setAttribute("aria-expanded", "false");
   document.body.style.position = "";
   document.body.style.top = "";
   document.body.style.left = "";
   document.body.style.right = "";
   document.body.style.width = "";
-  if (wasOpen) window.scrollTo(0, lockedScrollY);
+  if (wasOpen) {
+    window.scrollTo(0, lockedScrollY);
+    if (isMobileViewport()) {
+      requestAnimationFrame(() => {
+        mobileMenuBtn?.focus();
+      });
+    }
+  }
 }
 
 function getDatasetDateBounds(weeks) {
