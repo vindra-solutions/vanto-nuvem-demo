@@ -46,43 +46,55 @@ const defaultFilters = {
 
 const KPI_HELP_TEXT = {
   "Motor Comercial":
-    "Resume el motor comercial principal: la facturacion depende de cuantas ordenes se generan y del ticket promedio.",
-  Facturación: "Suma de ventas netas del periodo filtrado.",
-  "Órdenes e-comm": "Total de ordenes del canal e-commerce en el periodo filtrado.",
-  "Ticket Promedio": "Facturacion total dividida entre el total de ordenes.",
+    "Tarjeta compuesta: Facturación = suma de ventas netas; Órdenes e-comm = suma de órdenes del canal e-commerce; Ticket Promedio = Facturación / órdenes totales.",
+  Facturación: "Suma de ventas netas.",
+  "Órdenes e-comm": "Suma de órdenes del canal e-commerce.",
+  "Ticket Promedio": "Facturación total dividida entre órdenes totales.",
   "Margen Bruto % · $":
-    "Margen bruto $ = Facturacion - costo de venta (COGS). Margen bruto % = Margen bruto $ / Facturacion.",
-  EBITDA: "En este demo se estima como 14.5% de la facturacion.",
-  "Fill Rate": "Promedio ponderado por ordenes del porcentaje surtido completo.",
+    "Margen bruto $ = Facturación - costo de venta (COGS). Margen bruto % = Margen bruto $ / Facturación.",
+  "Eficiencia Comercial":
+    "Tarjeta compuesta: Margen Bruto % · $ = (Facturación - COGS) y su porcentaje; Conversión e-comm = órdenes e-commerce / sesiones e-commerce; Descuento Promedio = promedio ponderado por facturación.",
+  "Servicio Logístico":
+    "Tarjeta compuesta: % Pedidos a Tiempo = promedio ponderado por órdenes de OTD; OTIF = promedio ponderado por órdenes de entregas a tiempo y completas; Fill Rate = promedio ponderado por órdenes del surtido.",
+  "Salud de Inventario":
+    "Tarjeta compuesta: Días de Inventario = (Inventario / costo de venta anualizado) x 365; Stockout Rate = promedio ponderado por órdenes de quiebre; Backorder % = unidades en backorder / órdenes.",
+  "Salud de Talento":
+    "Tarjeta compuesta: Ausentismo y Rotación son promedios ponderados por headcount; Costo laboral / ventas = costo laboral total / facturación.",
+  "EBITDA % · $": "EBITDA $ = utilidad operativa antes de intereses, impuestos, depreciación y amortización. EBITDA % = EBITDA $ / Facturación.",
+  EBITDA: "EBITDA $ = utilidad operativa antes de intereses, impuestos, depreciación y amortización. EBITDA % = EBITDA $ / Facturación.",
+  "Fill Rate": "Promedio ponderado por órdenes del porcentaje surtido completo.",
   "Días de Inventario":
-    "Dias estimados que dura el inventario actual: (Inventario / Costo de venta) x 365.",
+    "Días estimados de cobertura: (Inventario / costo de venta anualizado) x 365.",
   "% Entregas a Tiempo":
-    "Promedio ponderado por ordenes del porcentaje de entregas dentro del SLA.",
-  "Órdenes / Tickets": "Total de ordenes (tickets) del periodo filtrado.",
-  "Utilidades por Transacción": "Unidades vendidas divididas entre el total de ordenes.",
-  "Margen Bruto": "Margen bruto % = (Facturacion - costo de venta) / Facturacion.",
-  "Descuento Promedio": "Promedio ponderado por facturacion del descuento aplicado.",
-  "Conversión e-comm": "Ordenes e-commerce divididas entre sesiones e-commerce.",
-  Devoluciones: "Promedio ponderado por ordenes del porcentaje de devoluciones.",
+    "Promedio ponderado por órdenes del porcentaje de entregas dentro del SLA.",
+  "Órdenes / Tickets": "Suma total de órdenes (tickets).",
+  "Utilidades por Transacción": "Unidades vendidas divididas entre órdenes totales.",
+  "Margen Bruto": "Margen bruto % = (Facturación - costo de venta) / Facturación.",
+  "Descuento Promedio": "Promedio ponderado por facturación del descuento aplicado.",
+  "Conversión e-comm": "Órdenes e-commerce divididas entre sesiones e-commerce.",
+  Devoluciones: "Promedio ponderado por órdenes del porcentaje de devoluciones.",
   "% Pedidos a Tiempo":
-    "Promedio ponderado por ordenes del porcentaje de pedidos entregados a tiempo.",
+    "Promedio ponderado por órdenes del porcentaje de pedidos entregados a tiempo.",
+  OTIF: "Promedio ponderado por órdenes del porcentaje de pedidos entregados a tiempo y completos.",
   "OTIF (On Time In Full)":
-    "Porcentaje de pedidos entregados a tiempo y completos, ponderado por ordenes.",
+    "Promedio ponderado por órdenes del porcentaje de pedidos entregados a tiempo y completos.",
+  "Backorder %":
+    "Porcentaje de órdenes con unidades pendientes por falta de inventario.",
   Backorder:
-    "Ordenes en espera por falta de inventario, mostrado como volumen y porcentaje sobre ordenes.",
-  "Stockout Rate": "Promedio ponderado por ordenes del porcentaje de quiebres de inventario.",
-  "Inventario Total": "Suma del valor de inventario del periodo filtrado.",
-  "Costo logístico/orden": "Costo logistico total dividido entre el total de ordenes.",
-  "Headcount actual": "Total de colaboradores activos en la semana mas reciente del rango.",
-  "Vacantes abiertas": "Total de vacantes abiertas en la semana mas reciente.",
-  Rotación: "Promedio ponderado por headcount del porcentaje de rotacion.",
+    "Muestra dos medidas: volumen de unidades en backorder y Backorder % (unidades en backorder / órdenes).",
+  "Stockout Rate": "Promedio ponderado por órdenes del porcentaje de quiebres de inventario.",
+  "Inventario Total": "Suma del valor de inventario.",
+  "Costo logístico/orden": "Costo logístico total dividido entre órdenes totales.",
+  "Headcount actual": "Suma de colaboradores activos en la semana más reciente.",
+  "Vacantes abiertas": "Suma de vacantes abiertas en la semana más reciente.",
+  Rotación: "Promedio ponderado por headcount del porcentaje de rotación.",
   "Tiempo de cobertura":
-    "Promedio ponderado por vacantes de los dias que tarda cubrir una posicion.",
+    "Promedio ponderado por vacantes de los días que tarda en cubrirse una posición.",
   Ausentismo: "Promedio ponderado por headcount del porcentaje de ausentismo.",
   "Horas extra":
-    "Horas extra acumuladas y su costo estimado en el modelo (horas x tarifa).",
-  "Costo laboral total": "Suma del costo laboral del periodo filtrado.",
-  "Costo laboral / ventas": "Costo laboral total dividido entre facturacion.",
+    "Horas extra = suma de horas extra. Costo = horas extra x tarifa por hora.",
+  "Costo laboral total": "Suma del costo laboral.",
+  "Costo laboral / ventas": "Costo laboral total dividido entre Facturación.",
 };
 
 const model = generateModel();
@@ -348,6 +360,27 @@ function shiftIsoYear(iso, years) {
   const date = isoToDate(iso);
   date.setUTCFullYear(date.getUTCFullYear() + years);
   return dateToIso(date);
+}
+
+function isoMonthKey(iso) {
+  const [year, month] = String(iso || "").split("-");
+  return `${year}-${month}`;
+}
+
+function shiftMonthKeyYear(monthKey, years) {
+  const [yearPart, monthPart] = String(monthKey || "").split("-");
+  const year = Number(yearPart) || 1970;
+  const month = Number(monthPart) || 1;
+  return `${year + years}-${String(month).padStart(2, "0")}`;
+}
+
+function monthKeyLabel(monthKey) {
+  const [yearPart, monthPart] = String(monthKey || "").split("-");
+  const year = Number(yearPart) || 1970;
+  const month = Number(monthPart) || 1;
+  const date = new Date(Date.UTC(year, month - 1, 1));
+  const shortMonth = date.toLocaleDateString("es-MX", { month: "short", timeZone: "UTC" }).replace(".", "");
+  return `${shortMonth} ${year}`;
 }
 
 function diffDaysInclusive(from, to) {
@@ -686,11 +719,19 @@ function renderExecutive() {
     return;
   }
   const lyRecords = getLyPeriodRecords(model.records, records);
-  const data = executiveData(records, lyRecords);
+  const hrRecords = getFilteredHR();
+  const lyHR = getLyPeriodHR(hrRecords);
+  const data = executiveData(records, lyRecords, hrRecords, lyHR);
 
   viewEl.innerHTML = `
     ${scorecardsHTML(data.scorecards)}
     <section class="grid">
+      <article class="card span-12">
+        <h4>Ventas por mes</h4>
+        <p class="sub">Actual vs AA vs objetivo</p>
+        <div id="exec-monthly-sales" class="chart"></div>
+      </article>
+
       <article class="card span-8">
         <h4>Tendencia de Facturación</h4>
         <p class="sub">${getDateScopeLabel()}</p>
@@ -730,6 +771,14 @@ function renderExecutive() {
       </article>
     </section>
   `;
+
+  monthlySalesChart(
+    "exec-monthly-sales",
+    data.monthLabels,
+    data.monthSales,
+    data.monthSalesLY,
+    data.monthTarget,
+  );
 
   lineChart(
     "exec-sales-trend",
@@ -974,12 +1023,13 @@ function renderHR() {
   verticalBar("hr-productivity", data.productivity.map((d) => d.store), data.productivity.map((d) => d.value), { valueType: "currency" });
 }
 
-function executiveData(records, lyRecords = []) {
+function executiveData(records, lyRecords = [], hrRecords = [], lyHR = []) {
   const sales = sum(records, "netSales");
   const lySales = sum(lyRecords, "netSales");
   const margin = sum(records, "grossMargin");
   const marginPct = pct(margin, sales);
   const ebitda = sales * 0.145;
+  const ebitdaPct = pct(ebitda, sales);
   const ordersEcom = sum(records.filter((r) => r.channel === "E-commerce"), "orders");
   const ticketsStore = sum(records.filter((r) => r.channel === "Tienda"), "orders");
   const aov = sales / Math.max(ordersEcom + ticketsStore, 1);
@@ -993,11 +1043,34 @@ function executiveData(records, lyRecords = []) {
   const lyOrdersTotal = sum(lyRecords, "orders");
   const lyAov = lySales / Math.max(lyOrdersTotal, 1);
   const lyFill = weightedAvg(lyRecords, "fillRate", "orders");
+  const discount = weightedAvg(records, "discountPct", "netSales");
+  const lyDiscount = weightedAvg(lyRecords, "discountPct", "netSales");
+  const ecom = records.filter((r) => r.channel === "E-commerce");
+  const lyEcom = lyRecords.filter((r) => r.channel === "E-commerce");
+  const conv = pct(sum(ecom, "orders"), sum(ecom, "sessions"));
+  const lyConv = pct(sum(lyEcom, "orders"), sum(lyEcom, "sessions"));
   const lyInventory = sum(lyRecords, "inventoryValue");
   const lyCogs = sum(lyRecords, "cogs");
   const lyDoh = (lyInventory / Math.max(lyCogs * 52, 1)) * 365;
   const lyOtd = weightedAvg(lyRecords, "otd", "orders");
   const lyOrdersEcom = sum(lyRecords.filter((r) => r.channel === "E-commerce"), "orders");
+  const otif = weightedAvg(records, "otif", "orders");
+  const lyOtif = weightedAvg(lyRecords, "otif", "orders");
+  const stockout = weightedAvg(records, "stockoutRate", "orders");
+  const lyStockout = weightedAvg(lyRecords, "stockoutRate", "orders");
+  const ordersTotal = sum(records, "orders");
+  const backorders = sum(records, "backorderUnits");
+  const backorderPct = pct(backorders, ordersTotal);
+  const lyBackorders = sum(lyRecords, "backorderUnits");
+  const lyBackorderPct = pct(lyBackorders, lyOrdersTotal);
+  const absenteeism = weightedAvg(hrRecords, "absenteeismPct", "actualHeadcount");
+  const lyAbsenteeism = weightedAvg(lyHR, "absenteeismPct", "actualHeadcount");
+  const turnover = weightedAvg(hrRecords, "turnoverPct", "actualHeadcount");
+  const lyTurnover = weightedAvg(lyHR, "turnoverPct", "actualHeadcount");
+  const laborCost = sum(hrRecords, "laborCost");
+  const lyLaborCost = sum(lyHR, "laborCost");
+  const laborVsSales = pct(laborCost, sales);
+  const lyLaborVsSales = pct(lyLaborCost, lySales);
 
   const weekMap = aggregateBy(records, "weekLabel", (acc, rec) => {
     acc.sales += rec.netSales;
@@ -1006,6 +1079,22 @@ function executiveData(records, lyRecords = []) {
     if (rec.channel === "E-commerce") acc.ecom += rec.netSales;
     return acc;
   }, () => ({ sales: 0, target: 0, store: 0, ecom: 0 }));
+
+  const monthMap = aggregateBy(records, (rec) => isoMonthKey(rec.isoDate), (acc, rec) => {
+    acc.sales += rec.netSales;
+    acc.target += rec.budgetSales;
+    return acc;
+  }, () => ({ sales: 0, target: 0 }));
+  const lyMonthMap = aggregateBy(lyRecords, (rec) => isoMonthKey(rec.isoDate), (acc, rec) => {
+    acc.sales += rec.netSales;
+    return acc;
+  }, () => ({ sales: 0 }));
+
+  const monthKeys = Object.keys(monthMap).sort((a, b) => a.localeCompare(b));
+  const monthLabels = monthKeys.map((key) => monthKeyLabel(key));
+  const monthSales = monthKeys.map((key) => monthMap[key].sales);
+  const monthTarget = monthKeys.map((key) => monthMap[key].target);
+  const monthSalesLY = monthKeys.map((key) => lyMonthMap[shiftMonthKeyYear(key, -1)]?.sales || 0);
 
   const weekLabels = Object.keys(weekMap);
   const weekSales = weekLabels.map((w) => weekMap[w].sales);
@@ -1082,12 +1171,32 @@ function executiveData(records, lyRecords = []) {
         { label: "Órdenes e-comm", value: formatInt(ordersEcom), trend: trendPct(ordersEcom, lyOrdersEcom), note: "vs AA" },
         { label: "Ticket Promedio", value: formatMXN(aov), trend: trendPct(aov, lyAov), note: "vs AA" },
       ]),
-      score("Margen Bruto % · $", `${formatPct(marginPct)} · ${formatCompactMXN(margin)}`, trendPct(marginPct, lyMarginPct), "vs AA"),
-      score("EBITDA", formatCompactMXN(ebitda), trendPct(ebitda, lySales * 0.145), "vs AA"),
-      score("Fill Rate", formatPct(fill), trendPct(fill, lyFill), "vs AA"),
-      score("Días de Inventario", `${formatDecimal(doh, 1)} días`, trendLowerBetter(doh, lyDoh), "vs AA"),
-      score("% Entregas a Tiempo", formatPct(otd), trendPct(otd, lyOtd), "vs AA"),
+      scoreBundle("Eficiencia Comercial", "Rentabilidad, conversion y descuento", [
+        { label: "Margen Bruto % · $", value: `${formatPct(marginPct)} · ${formatCompactMXN(margin)}`, trend: trendPct(marginPct, lyMarginPct), note: "vs AA" },
+        { label: "Conversión e-comm", value: formatPct(conv), trend: trendPct(conv, lyConv), note: "vs AA" },
+        { label: "Descuento Promedio", value: formatPct(discount), trend: trendLowerBetter(discount, lyDiscount), note: "vs AA" },
+      ]),
+      scoreBundle("Servicio Logístico", "Entrega a tiempo y surtido", [
+        { label: "% Pedidos a Tiempo", value: formatPct(otd), trend: trendPct(otd, lyOtd), note: "vs AA" },
+        { label: "OTIF", value: formatPct(otif), trend: trendPct(otif, lyOtif), note: "vs AA" },
+        { label: "Fill Rate", value: formatPct(fill), trend: trendPct(fill, lyFill), note: "vs AA" },
+      ]),
+      scoreBundle("Salud de Inventario", "Cobertura y riesgo de quiebre", [
+        { label: "Días de Inventario", value: `${formatDecimal(doh, 1)} días`, trend: trendLowerBetter(doh, lyDoh), note: "vs AA" },
+        { label: "Stockout Rate", value: formatPct(stockout), trend: trendLowerBetter(stockout, lyStockout), note: "vs AA" },
+        { label: "Backorder %", value: formatPct(backorderPct), trend: trendLowerBetter(backorderPct, lyBackorderPct), note: "vs AA" },
+      ]),
+      scoreBundle("Salud de Talento", "Estabilidad y costo laboral", [
+        { label: "Ausentismo", value: formatPct(absenteeism), trend: trendLowerBetter(absenteeism, lyAbsenteeism), note: "vs AA" },
+        { label: "Rotación", value: formatPct(turnover), trend: trendLowerBetter(turnover, lyTurnover), note: "vs AA" },
+        { label: "Costo laboral / ventas", value: formatPct(laborVsSales), trend: trendLowerBetter(laborVsSales, lyLaborVsSales), note: "vs AA" },
+      ]),
+      score("EBITDA % · $", `${formatPct(ebitdaPct)} · ${formatCompactMXN(ebitda)}`, trendPct(ebitda, lySales * 0.145), "vs AA"),
     ],
+    monthLabels,
+    monthSales,
+    monthSalesLY,
+    monthTarget,
     weekLabels,
     weekSales,
     weekTarget,
@@ -1659,9 +1768,8 @@ function kpiCaptionHTML(label, className) {
   const safeHelp = escapeHtml(helpText);
   return `
     <p class="${className} kpi-caption">
-      <span>${safeLabel}</span>
       <span class="kpi-help-wrap">
-        <button type="button" class="kpi-help-btn" aria-label="Como se calcula ${safeLabel}">?</button>
+        <span class="kpi-help-label" tabindex="0" aria-label="Como se calcula ${safeLabel}">${safeLabel}</span>
         <span class="kpi-help-tooltip" role="tooltip">${safeHelp}</span>
       </span>
     </p>
@@ -1835,6 +1943,81 @@ function barLineChart(id, labels, bars, line, options = {}) {
     series: [
       { type: "bar", name: "Ventas", data: bars, itemStyle: { color: chartColors.primary, borderRadius: 8 } },
       { type: "line", name: "Meta", data: line, smooth: true, showSymbol: false, lineStyle: { width: 2.4, color: chartColors.yellow } },
+    ],
+  });
+}
+
+function monthlySalesChart(id, labels, sales, salesLY, target) {
+  const labelInterval = axisLabelInterval(labels, 10);
+  const useVerticalLabels = shouldUseVerticalXAxisLabels(labels, 14);
+
+  mountChart(id, {
+    tooltip: {
+      trigger: "axis",
+      formatter: (params) => {
+        const rowsData = Array.isArray(params) ? params : [params];
+        const title = rowsData[0]?.axisValueLabel || rowsData[0]?.name || "";
+        const lines = [title];
+        rowsData.forEach((entry) => {
+          lines.push(`${entry.marker}${entry.seriesName}: ${formatMetricValue(entry.value, "currency", "tooltip")}`);
+        });
+        return lines.join("<br/>");
+      },
+    },
+    legend: {
+      top: 4,
+      textStyle: { color: "#56718f", fontSize: 11 },
+      itemWidth: 14,
+      itemHeight: 8,
+    },
+    grid: { left: 54, right: 18, top: 40, bottom: useVerticalLabels ? 84 : 42, containLabel: true },
+    xAxis: {
+      type: "category",
+      data: labels,
+      axisLine: { lineStyle: { color: "#c6d7e7" } },
+      axisLabel: useVerticalLabels
+        ? { color: "#5f7895", rotate: 90, interval: 0, margin: 8, fontSize: 10, hideOverlap: true }
+        : { color: "#5f7895", interval: labelInterval },
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: "#5f7895", formatter: (v) => formatMetricValue(v, "currency", "axis") },
+      splitLine: { lineStyle: { color: "#e4edf6" } },
+    },
+    series: [
+      {
+        name: "Ventas",
+        type: "bar",
+        data: sales,
+        barMaxWidth: 34,
+        itemStyle: {
+          borderRadius: [8, 8, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#0e7dbb" },
+            { offset: 1, color: "#005888" },
+          ]),
+        },
+      },
+      {
+        name: "Ventas AA",
+        type: "line",
+        data: salesLY,
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 7,
+        lineStyle: { width: 2.4, type: "dashed", color: "#6b7f95" },
+        itemStyle: { color: "#6b7f95" },
+      },
+      {
+        name: "Objetivo",
+        type: "line",
+        data: target,
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 6,
+        lineStyle: { width: 2.6, color: chartColors.yellow },
+        itemStyle: { color: chartColors.yellow },
+      },
     ],
   });
 }

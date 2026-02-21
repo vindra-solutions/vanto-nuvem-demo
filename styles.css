@@ -607,23 +607,17 @@ select {
   display: inline-flex;
 }
 
-.kpi-help-btn {
-  border: 1px solid #c7daea;
-  background: #eef5fc;
-  color: #4b6886;
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0;
+.kpi-help-label {
   cursor: help;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
 }
 
-.kpi-help-btn:focus-visible {
+.kpi-help-label:focus-visible {
   outline: 2px solid #79a9d2;
-  outline-offset: 1px;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .kpi-help-tooltip {
