@@ -3,10 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Demo BI | RYSE</title>
+    <title>Demo BI | Vanto Nuvem</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=block" rel="stylesheet" />
+    <script>
+      (function () {
+        const root = document.documentElement;
+        root.classList.add("fonts-loading");
+        let revealed = false;
+        const reveal = () => {
+          if (revealed) return;
+          revealed = true;
+          root.classList.remove("fonts-loading");
+          root.classList.add("fonts-ready");
+        };
+        const fallbackTimer = window.setTimeout(reveal, 2200);
+        if (!document.fonts || !document.fonts.load) {
+          reveal();
+          return;
+        }
+        Promise.all([
+          document.fonts.load('400 1em "Manrope"'),
+          document.fonts.load('700 1em "Manrope"'),
+          document.fonts.load('600 1em "Sora"'),
+        ]).finally(() => {
+          window.clearTimeout(fallbackTimer);
+          reveal();
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        try {
+          var theme = window.localStorage.getItem("vn-demo-color-scheme");
+          if (theme) document.documentElement.dataset.colorScheme = theme;
+          var mode = window.localStorage.getItem("vn-demo-color-mode");
+          if (mode) document.documentElement.dataset.colorMode = mode;
+        } catch (e) {}
+      })();
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
     <link rel="stylesheet" href="/styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer></script>
@@ -22,9 +58,9 @@
           <span aria-hidden="true">✕</span>
         </button>
         <div class="sidebar-top">
-          <div class="brand-row">
+          <div class="brand-row is-square-logo">
             <div class="brand-head">
-              <div class="brand-logo-wrap" id="brand-logo-wrap">
+              <div class="brand-logo-wrap is-square-logo" id="brand-logo-wrap">
                 <img src="/logos/vanto-nuvem.png" alt="Vanto Nuvem" class="brand-logo" id="brand-logo" />
               </div>
               <p class="kicker" id="sidebar-brand-kicker">Vanto Nuvem</p>
@@ -37,6 +73,23 @@
           </div>
         </div>
           <div class="sidebar-bottom">
+            <div class="theme-popover" id="theme-popover" role="dialog" aria-label="Temas de color" aria-modal="false" hidden>
+              <div class="theme-popover-head">
+                <p class="theme-popover-kicker">Apariencia</p>
+                <h3>Color scheme</h3>
+              </div>
+              <div class="mode-toggle" id="mode-toggle" role="group" aria-label="Modo de color">
+                <button type="button" class="mode-toggle-btn" data-color-mode="light" aria-pressed="true">
+                  <span aria-hidden="true">☀</span>
+                  <span>Light</span>
+                </button>
+                <button type="button" class="mode-toggle-btn" data-color-mode="dark" aria-pressed="false">
+                  <span aria-hidden="true">☾</span>
+                  <span>Dark</span>
+                </button>
+              </div>
+              <div class="theme-options" id="theme-options"></div>
+            </div>
             <div class="user-row">
               <div class="user-box user-box-with-settings">
                 <div class="user-main">
@@ -46,7 +99,7 @@
                     <p class="user-role">Dirección General</p>
                   </div>
                 </div>
-                <button type="button" class="settings-btn" aria-label="Configuración">
+                <button type="button" class="settings-btn" id="settings-btn" aria-label="Configuración" aria-haspopup="dialog" aria-expanded="false">
                   <span aria-hidden="true">⚙</span>
                 </button>
               </div>

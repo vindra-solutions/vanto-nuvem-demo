@@ -52,23 +52,58 @@ const CLIENT_BRANDS = {
   },
 };
 
+const COLOR_SCHEME_STORAGE_KEY = "vn-demo-color-scheme";
+const COLOR_MODE_STORAGE_KEY = "vn-demo-color-mode";
+const COLOR_SCHEMES = [
+  {
+    key: "ocean",
+    label: "Ocean Blue",
+    description: "Limpio y corporativo",
+    swatches: ["#0b6fae", "#2f86c8", "#e9f4fc", "#0f2f4d"],
+  },
+  {
+    key: "forest",
+    label: "Forest Sage",
+    description: "Calmo y analítico",
+    swatches: ["#2f7d6b", "#68a08b", "#eef7f3", "#163f37"],
+  },
+  {
+    key: "amber",
+    label: "Sand & Amber",
+    description: "Cálido y elegante",
+    swatches: ["#b8742b", "#d59a54", "#fbf5ea", "#49331d"],
+  },
+  {
+    key: "slate",
+    label: "Slate Cyan",
+    description: "Tech y sobrio",
+    swatches: ["#0c7f88", "#4ea9b0", "#edf7f8", "#14353a"],
+  },
+  {
+    key: "plum",
+    label: "Plum Ink",
+    description: "Premium discreto",
+    swatches: ["#7f3f72", "#b06aa0", "#f8eef6", "#391e34"],
+  },
+];
+
 const defaultFilters = {
-  canal: "Todos",
-  region: "Todas",
-  tienda: "Todas",
-  categoria: "Todas",
-  entrega: "Todos",
-  segmento: "Todos",
-  promo: "Todas",
-  pago: "Todos",
-  transportista: "Todos",
-  sla: "Todos",
-  area: "Todas",
-  turno: "Todos",
-  puesto: "Todos",
-  contrato: "Todos",
-  antiguedad: "Todos",
-  supervisor: "Todos",
+  canal: ["Todos"],
+  region: ["Todas"],
+  tienda: ["Todas"],
+  categoria: ["Todas"],
+  entrega: ["Todos"],
+  segmento: ["Todos"],
+  promo: ["Todas"],
+  pago: ["Todos"],
+  transportista: ["Todos"],
+  sla: ["Todos"],
+  area: ["Todas"],
+  turno: ["Todos"],
+  puesto: ["Todos"],
+  contrato: ["Todos"],
+  antiguedad: ["Todos"],
+  supervisor: ["Todos"],
 };
 
 const KPI_HELP_TEXT = {
@@ -133,7 +168,11 @@ const datasetDateBounds = getDatasetDateBounds(model.weeks);
 const state = {
   activeDashboard: "ejecutivo",
   filtersVisible: false,
-  filters: { ...defaultFilters },
+  filters: cloneDefaultFilters(),
+  openFilterKeys: [],
+  colorScheme: getInitialColorScheme(),
+  colorMode: getInitialColorMode(),
+  themePopoverOpen: false,
   dateRange: getInitialDateRange(datasetDateBounds),
 };
 const chartInstances = [];
@@ -180,6 +219,10 @@ const exportBtn = document.getElementById("export-btn");
 const sidebarOverlayEl = document.getElementById("sidebar-overlay");
 const mobileMenuBtn = document.getElementById("mobile-menu-btn");
 const sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+const settingsBtnEl = document.getElementById("settings-btn");
+const themePopoverEl = document.getElementById("theme-popover");
+const themeOptionsEl = document.getElementById("theme-options");
+const modeToggleEl = document.getElementById("mode-toggle");
 const mobileQuery = window.matchMedia("(max-width: 1024px)");
 let lockedScrollY = 0;
 
@@ -191,6 +234,8 @@ if (!window.echarts) {
 }
 
 function init() {
+  applyColorMode(state.colorMode);
+  applyColorScheme(state.colorScheme);
   applyClientBranding(activeClientBrand);
   initToolbar();
   initSidebar();
@@ -374,6 +419,8 @@ function initDateRangePicker() {
 }
 
 function initSidebar() {
+  initThemePopover();
+
   mobileMenuBtn?.addEventListener("click", () => {
     if (!isMobileViewport()) return;
     toggleSidebar();
@@ -384,11 +431,25 @@ function initSidebar() {
   });
 
   sidebarOverlayEl?.addEventListener("click", () => {
+    closeThemePopover();
     closeSidebar();
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeSidebar();
+    if (event.key !== "Escape") return;
+    if (state.themePopoverOpen) {
+      closeThemePopover();
+      return;
+    }
+    closeSidebar();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!state.themePopoverOpen) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (themePopoverEl?.contains(target) || settingsBtnEl?.contains(target)) return;
+    closeThemePopover();
   });
 }
 
@@ -421,6 +482,7 @@ function toggleSidebar() {
 
 function closeSidebar() {
   const wasOpen = document.body.classList.contains("sidebar-open");
+  closeThemePopover();
   document.body.classList.remove("sidebar-open");
   if (mobileMenuBtn) mobileMenuBtn.setAttribute("aria-expanded", "false");
   document.body.style.position = "";
@@ -436,6 +498,124 @@ function closeSidebar() {
       });
     }
   }
+}
+
+function initThemePopover() {
+  renderModeToggle();
+  renderThemeOptions();
+
+  settingsBtnEl?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleThemePopover();
+  });
+
+  themeOptionsEl?.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest("[data-theme-key]") : null;
+    if (!button) return;
+    applyColorScheme(button.dataset.themeKey);
+    closeThemePopover();
+  });
+
+  modeToggleEl?.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest("[data-color-mode]") : null;
+    if (!button) return;
+    applyColorMode(button.dataset.colorMode);
+    renderModeToggle();
+  });
+}
+
+function renderThemeOptions() {
+  if (!themeOptionsEl) return;
+  themeOptionsEl.innerHTML = COLOR_SCHEMES.map((scheme) => {
+    const isActive = scheme.key === state.colorScheme;
+    return `
+      <button
+        type="button"
+        class="theme-option ${isActive ? "is-active" : ""}"
+        data-theme-key="${scheme.key}"
+        aria-pressed="${isActive ? "true" : "false"}"
+      >
+        <span class="theme-option-preview" aria-hidden="true">
+          ${scheme.swatches.map((color) => `<span class="theme-swatch" style="--swatch:${color}"></span>`).join("")}
+        </span>
+        <span class="theme-option-copy">
+          <span class="theme-option-name">${escapeHtml(scheme.label)}</span>
+          <span class="theme-option-desc">${escapeHtml(scheme.description)}</span>
+        </span>
+        <span class="theme-option-check" aria-hidden="true">${isActive ? "●" : ""}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+function renderModeToggle() {
+  if (!modeToggleEl) return;
+  modeToggleEl.querySelectorAll("[data-color-mode]").forEach((button) => {
+    const isActive = button.dataset.colorMode === state.colorMode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function toggleThemePopover() {
+  if (state.themePopoverOpen) {
+    closeThemePopover();
+  } else {
+    openThemePopover();
+  }
+}
+
+function openThemePopover() {
+  if (!themePopoverEl || !settingsBtnEl) return;
+  state.themePopoverOpen = true;
+  renderThemeOptions();
+  themePopoverEl.hidden = false;
+  themePopoverEl.classList.add("is-open");
+  settingsBtnEl.setAttribute("aria-expanded", "true");
+}
+
+function closeThemePopover() {
+  if (!themePopoverEl || !settingsBtnEl) return;
+  state.themePopoverOpen = false;
+  themePopoverEl.classList.remove("is-open");
+  themePopoverEl.hidden = true;
+  settingsBtnEl.setAttribute("aria-expanded", "false");
+}
+
+function getInitialColorScheme() {
+  try {
+    const stored = window.localStorage.getItem(COLOR_SCHEME_STORAGE_KEY);
+    if (COLOR_SCHEMES.some((scheme) => scheme.key === stored)) return stored;
+  } catch {}
+  return "ocean";
+}
+
+function applyColorScheme(key) {
+  const scheme = COLOR_SCHEMES.find((item) => item.key === key) || COLOR_SCHEMES[0];
+  state.colorScheme = scheme.key;
+  document.documentElement.dataset.colorScheme = scheme.key;
+  try {
+    window.localStorage.setItem(COLOR_SCHEME_STORAGE_KEY, scheme.key);
+  } catch {}
+  renderThemeOptions();
+}
+
+function getInitialColorMode() {
+  try {
+    const stored = window.localStorage.getItem(COLOR_MODE_STORAGE_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {}
+  return "light";
+}
+
+function applyColorMode(mode) {
+  const resolved = mode === "dark" ? "dark" : "light";
+  state.colorMode = resolved;
+  document.documentElement.dataset.colorMode = resolved;
+  try {
+    window.localStorage.setItem(COLOR_MODE_STORAGE_KEY, resolved);
+  } catch {}
+  renderModeToggle();
 }
 
 function getDatasetDateBounds(weeks) {
@@ -562,6 +742,7 @@ function renderFilterRow() {
   }
 
   const defs = getFilterDefinitions();
+  const activeFilterChips = getActiveFilterChips(defs);
   filterToggleBtn.classList.add("active");
   filterRowEl.classList.remove("hidden");
   filterRowEl.innerHTML = `
@@ -570,32 +751,89 @@ function renderFilterRow() {
         .map(
           (f) => `
         <div class="filter-group">
-          <label for="f-${f.key}">${f.label}</label>
-          <select id="f-${f.key}" data-key="${f.key}">
-            ${f.options.map((opt) => `<option value="${opt}" ${opt === state.filters[f.key] ? "selected" : ""}>${opt}</option>`).join("")}
-          </select>
+          <label>${f.label}</label>
+          <details class="filter-multi" data-key="${f.key}" ${state.openFilterKeys.includes(f.key) ? "open" : ""}>
+            <summary>${escapeHtml(getFilterSelectionSummary(f.key, f.options))}</summary>
+            <div class="filter-multi-menu">
+              ${f.options.map((opt, idx) => {
+                const checked = getFilterSelection(f.key).includes(opt);
+                const inputId = `f-${f.key}-${idx}`;
+                return `
+                  <label class="filter-multi-option" for="${inputId}">
+                    <input type="checkbox" id="${inputId}" data-key="${f.key}" value="${escapeHtml(opt)}" ${checked ? "checked" : ""} />
+                    <span>${escapeHtml(opt)}</span>
+                  </label>
+                `;
+              }).join("")}
+            </div>
+          </details>
         </div>
       `,
         )
         .join("")}
       <button type="button" class="clear-filter" id="clear-filters-btn">Limpiar</button>
     </div>
+    ${
+      activeFilterChips.length
+        ? `
+      <div class="filter-chip-row" aria-label="Filtros activos">
+        ${activeFilterChips
+          .map(
+            (chip) => `
+          <button type="button" class="filter-chip" data-filter-chip-remove="${chip.key}" title="Quitar filtro ${escapeHtml(chip.label)}">
+            <span class="filter-chip-label">${escapeHtml(chip.label)}:</span>
+            <span class="filter-chip-value">${escapeHtml(chip.value)}</span>
+            <span class="filter-chip-x" aria-hidden="true">✕</span>
+          </button>
+        `,
+          )
+          .join("")}
+      </div>
+    `
+        : ""
+    }
   `;
 
-  filterRowEl.querySelectorAll("select").forEach((select) => {
-    select.addEventListener("change", () => {
-      state.filters[select.dataset.key] = select.value;
-      if (select.dataset.key === "region" && !storeMatchesRegion(state.filters.tienda, state.filters.region)) {
-        state.filters.tienda = "Todas";
+  filterRowEl.querySelectorAll(".filter-multi").forEach((detailsEl) => {
+    detailsEl.addEventListener("toggle", () => {
+      syncOpenFilterKeysFromDom();
+    });
+  });
+
+  filterRowEl.querySelectorAll('.filter-multi-option input[type="checkbox"]').forEach((input) => {
+    input.addEventListener("change", () => {
+      updateFilterSelectionFromCheckbox(input.dataset.key, input.value, input.checked);
+      if (input.dataset.key === "region") {
+        state.filters.tienda = getStoresSelectionForRegions(state.filters.tienda, state.filters.region);
       }
+      syncOpenFilterKeysFromDom();
       render();
     });
   });
 
   filterRowEl.querySelector("#clear-filters-btn")?.addEventListener("click", () => {
-    state.filters = { ...defaultFilters };
+    state.filters = cloneDefaultFilters();
+    syncOpenFilterKeysFromDom();
     render();
   });
+
+  filterRowEl.querySelectorAll("[data-filter-chip-remove]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      resetFilterSelection(btn.dataset.filterChipRemove);
+      if (btn.dataset.filterChipRemove === "region") {
+        state.filters.tienda = getStoresSelectionForRegions(state.filters.tienda, state.filters.region);
+      }
+      syncOpenFilterKeysFromDom();
+      render();
+    });
+  });
+}
+
+function syncOpenFilterKeysFromDom() {
+  if (!filterRowEl) return;
+  state.openFilterKeys = Array.from(filterRowEl.querySelectorAll(".filter-multi[open]"))
+    .map((el) => el.dataset.key)
+    .filter(Boolean);
 }
 
 function syncToolbarState() {
@@ -734,9 +972,12 @@ function getFilterDefinitions() {
 }
 
 function getOptionSets() {
-  const region = state.filters.region;
+  const regionSelection = getFilterSelection("region");
+  const allRegion = getAllFilterValue("region");
+  const useAllRegions = regionSelection.includes(allRegion);
+  const selectedRegions = new Set(regionSelection);
   const stores = model.stores
-    .filter((s) => region === "Todas" || s.region === region)
+    .filter((s) => useAllRegions || selectedRegions.has(s.region))
     .map((s) => s.name)
     .sort((a, b) => a.localeCompare(b));
 
@@ -752,24 +993,31 @@ function getOptionSets() {
 }
 
 function storeMatchesRegion(storeName, region) {
-  if (storeName === "Todas" || region === "Todas") return true;
-  const store = model.stores.find((s) => s.name === storeName);
-  return store?.region === region;
+  const stores = normalizeFilterSelection("tienda", storeName);
+  const regions = normalizeFilterSelection("region", region);
+  const allStore = getAllFilterValue("tienda");
+  const allRegion = getAllFilterValue("region");
+  if (stores.includes(allStore) || regions.includes(allRegion)) return true;
+  const allowedRegions = new Set(regions);
+  return stores.every((storeLabel) => {
+    const store = model.stores.find((s) => s.name === storeLabel);
+    return store && allowedRegions.has(store.region);
+  });
 }
 
 function matchesRecordFilters(record, options = {}) {
   const includeDate = options.includeDate !== false;
   const dateRange = options.dateRange || state.dateRange;
   if (includeDate && (record.isoDate < dateRange.from || record.isoDate > dateRange.to)) return false;
-  if (state.filters.canal !== "Todos" && record.channel !== state.filters.canal) return false;
-  if (state.filters.region !== "Todas" && record.region !== state.filters.region) return false;
-  if (state.filters.tienda !== "Todas" && record.store !== state.filters.tienda) return false;
-  if (state.filters.categoria !== "Todas" && record.category !== state.filters.categoria) return false;
-  if (state.filters.entrega !== "Todos" && record.deliveryType !== state.filters.entrega) return false;
-  if (state.filters.segmento !== "Todos" && record.segment !== state.filters.segmento) return false;
-  if (state.filters.promo !== "Todas" && record.campaign !== state.filters.promo) return false;
-  if (state.filters.pago !== "Todos" && record.paymentMethod !== state.filters.pago) return false;
-  if (state.filters.transportista !== "Todos" && record.carrier !== state.filters.transportista) return false;
+  if (!filterIncludesValue("canal", record.channel)) return false;
+  if (!filterIncludesValue("region", record.region)) return false;
+  if (!filterIncludesValue("tienda", record.store)) return false;
+  if (!filterIncludesValue("categoria", record.category)) return false;
+  if (!filterIncludesValue("entrega", record.deliveryType)) return false;
+  if (!filterIncludesValue("segmento", record.segment)) return false;
+  if (!filterIncludesValue("promo", record.campaign)) return false;
+  if (!filterIncludesValue("pago", record.paymentMethod)) return false;
+  if (!filterIncludesValue("transportista", record.carrier)) return false;
   return true;
 }
 
@@ -777,15 +1025,106 @@ function matchesHRFilters(record, options = {}) {
   const includeDate = options.includeDate !== false;
   const dateRange = options.dateRange || state.dateRange;
   if (includeDate && (record.isoDate < dateRange.from || record.isoDate > dateRange.to)) return false;
-  if (state.filters.region !== "Todas" && record.region !== state.filters.region) return false;
-  if (state.filters.tienda !== "Todas" && record.store !== state.filters.tienda) return false;
-  if (state.filters.area !== "Todas" && record.area !== state.filters.area) return false;
-  if (state.filters.turno !== "Todos" && record.shift !== state.filters.turno) return false;
-  if (state.filters.puesto !== "Todos" && record.role !== state.filters.puesto) return false;
-  if (state.filters.contrato !== "Todos" && record.contract !== state.filters.contrato) return false;
-  if (state.filters.antiguedad !== "Todos" && record.tenure !== state.filters.antiguedad) return false;
-  if (state.filters.supervisor !== "Todos" && record.supervisor !== state.filters.supervisor) return false;
+  if (!filterIncludesValue("region", record.region)) return false;
+  if (!filterIncludesValue("tienda", record.store)) return false;
+  if (!filterIncludesValue("area", record.area)) return false;
+  if (!filterIncludesValue("turno", record.shift)) return false;
+  if (!filterIncludesValue("puesto", record.role)) return false;
+  if (!filterIncludesValue("contrato", record.contract)) return false;
+  if (!filterIncludesValue("antiguedad", record.tenure)) return false;
+  if (!filterIncludesValue("supervisor", record.supervisor)) return false;
   return true;
+}
+
+function cloneDefaultFilters() {
+  return Object.fromEntries(
+    Object.entries(defaultFilters).map(([key, value]) => [key, Array.isArray(value) ? [...value] : value]),
+  );
+}
+
+function getAllFilterValue(key) {
+  const fallback = defaultFilters[key];
+  if (Array.isArray(fallback) && fallback.length) return fallback[0];
+  return "Todos";
+}
+
+function normalizeFilterSelection(key, value) {
+  const allValue = getAllFilterValue(key);
+  if (Array.isArray(value)) {
+    const valid = unique(value.filter(Boolean));
+    return valid.length ? valid : [allValue];
+  }
+  if (typeof value === "string" && value) return [value];
+  return [allValue];
+}
+
+function getFilterSelection(key) {
+  return normalizeFilterSelection(key, state.filters[key]);
+}
+
+function filterIncludesValue(key, candidate) {
+  const selected = getFilterSelection(key);
+  const allValue = getAllFilterValue(key);
+  if (selected.includes(allValue)) return true;
+  return selected.includes(candidate);
+}
+
+function getFilterSelectionSummary(key, options = []) {
+  const allValue = getAllFilterValue(key);
+  const selected = getFilterSelection(key).filter((item) => options.includes(item));
+  if (!selected.length || selected.includes(allValue)) return allValue;
+  if (selected.length === 1) return selected[0];
+  return `${selected.length} seleccionados`;
+}
+
+function getActiveFilterChips(defs = []) {
+  return defs
+    .map((def) => {
+      const allValue = getAllFilterValue(def.key);
+      const selected = getFilterSelection(def.key).filter((item) => def.options.includes(item) && item !== allValue);
+      if (!selected.length) return null;
+      return {
+        key: def.key,
+        label: def.label,
+        value: selected.length === 1 ? selected[0] : `${selected.length} seleccionados`,
+      };
+    })
+    .filter(Boolean);
+}
+
+function resetFilterSelection(key) {
+  if (!key || !(key in state.filters)) return;
+  state.filters[key] = [getAllFilterValue(key)];
+}
+
+function updateFilterSelectionFromCheckbox(key, option, checked) {
+  const allValue = getAllFilterValue(key);
+  let current = getFilterSelection(key);
+
+  if (option === allValue) {
+    state.filters[key] = checked ? [allValue] : [allValue];
+    return;
+  }
+
+  current = current.filter((value) => value !== allValue);
+
+  if (checked) {
+    if (!current.includes(option)) current.push(option);
+  } else {
+    current = current.filter((value) => value !== option);
+  }
+
+  state.filters[key] = current.length ? current : [allValue];
+}
+
+function getStoresSelectionForRegions(storeSelection, regionSelection) {
+  const stores = normalizeFilterSelection("tienda", storeSelection);
+  const allStore = getAllFilterValue("tienda");
+  if (stores.includes(allStore)) return [allStore];
+
+  const allowedStores = new Set(getOptionSets().tiendas);
+  const validStores = stores.filter((store) => allowedStores.has(store));
+  return validStores.length ? validStores : [allStore];
 }
 
 function getFilteredRecords(source, dateRange = state.dateRange) {
