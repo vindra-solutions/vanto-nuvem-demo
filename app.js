@@ -181,6 +181,7 @@ let layoutPassRaf = null;
 let deferredRenderRafA = null;
 let deferredRenderRafB = null;
 let renderCycleToken = 0;
+const dashboardMarkupCache = new Map();
 const chartColors = {
   primary: "#006DA8",
   navy: "#005888",
@@ -244,7 +245,7 @@ function init() {
   initSidebar();
   initKpiTooltipInteractions();
   renderMenu();
-  render();
+  render({ showSkeleton: true });
   window.addEventListener("resize", () => {
     scheduleLayoutPass();
     chartInstances.forEach((chart) => chart.resize());
@@ -388,12 +389,24 @@ function initToolbar() {
     const inputValue = topDateRangeInput.value || "";
     const [fromPart, toPart] = inputValue.split(" to ").map((v) => v.trim());
     if (!fromPart) return;
-    state.dateRange = normalizeCustomRange({ from: fromPart, to: toPart || fromPart });
-    render();
+    applyDateRangeIfChanged({ from: fromPart, to: toPart || fromPart });
   });
 
   exportBtn.addEventListener("click", () => {
     exportFilteredData();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!state.filtersVisible) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (target.closest(".filter-multi")) return;
+    closeOpenFilterDropdowns();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    closeOpenFilterDropdowns();
   });
 }
 
@@ -415,10 +428,16 @@ function initDateRangePicker() {
       if (!selectedDates.length) return;
       const from = dateToIso(selectedDates[0]);
       const to = selectedDates[1] ? dateToIso(selectedDates[1]) : from;
-      state.dateRange = normalizeCustomRange({ from, to });
-      render();
+      applyDateRangeIfChanged({ from, to });
     },
   });
+}
+
+function applyDateRangeIfChanged(rangeCandidate) {
+  const nextRange = normalizeCustomRange(rangeCandidate);
+  if (nextRange.from === state.dateRange.from && nextRange.to === state.dateRange.to) return;
+  state.dateRange = nextRange;
+  render();
 }
 
 function initSidebar() {
@@ -707,9 +726,14 @@ function renderMenu() {
 
   menuEl.querySelectorAll(".menu-item").forEach((button) => {
     button.addEventListener("click", () => {
-      state.activeDashboard = button.dataset.dashboard;
+      const nextDashboard = button.dataset.dashboard;
+      const isSameDashboard = nextDashboard === state.activeDashboard;
+      state.activeDashboard = nextDashboard;
       renderMenu();
-      render();
+      render({
+        showSkeleton: !dashboardMarkupCache.has(nextDashboard),
+        preferCachedView: !isSameDashboard,
+      });
       if (isMobileViewport()) closeSidebar();
     });
   });
@@ -726,24 +750,44 @@ function cancelDeferredRender() {
   }
 }
 
-function render() {
+function render(options = {}) {
+  const { showSkeleton = false, preferCachedView = false } = options;
   disposeCharts();
   titleEl.textContent = DASHBOARDS.find((d) => d.id === state.activeDashboard).label;
   syncToolbarState();
   renderFilterRow();
 
   const token = ++renderCycleToken;
-  renderDashboardSkeleton(state.activeDashboard);
   cancelDeferredRender();
-  deferredRenderRafA = requestAnimationFrame(() => {
-    deferredRenderRafA = null;
-    deferredRenderRafB = requestAnimationFrame(() => {
-      deferredRenderRafB = null;
+  const cachedMarkup = preferCachedView ? dashboardMarkupCache.get(state.activeDashboard) : null;
+
+  if (cachedMarkup) {
+    viewEl.innerHTML = cachedMarkup;
+    deferredRenderRafA = requestAnimationFrame(() => {
+      deferredRenderRafA = null;
       if (token !== renderCycleToken) return;
       renderDashboardContent();
       scheduleLayoutPass();
     });
-  });
+    return;
+  }
+
+  if (showSkeleton) {
+    renderDashboardSkeleton(state.activeDashboard);
+    deferredRenderRafA = requestAnimationFrame(() => {
+      deferredRenderRafA = null;
+      deferredRenderRafB = requestAnimationFrame(() => {
+        deferredRenderRafB = null;
+        if (token !== renderCycleToken) return;
+        renderDashboardContent();
+        scheduleLayoutPass();
+      });
+    });
+    return;
+  }
+
+  renderDashboardContent();
+  scheduleLayoutPass();
 }
 
 function renderDashboardContent() {
@@ -759,6 +803,8 @@ function renderDashboardContent() {
   if (state.activeDashboard === "rh") {
     renderHR();
   }
+
+  dashboardMarkupCache.set(state.activeDashboard, viewEl.innerHTML);
 }
 
 function renderDashboardSkeleton(dashboardId) {
@@ -990,6 +1036,14 @@ function syncOpenFilterKeysFromDom() {
   state.openFilterKeys = Array.from(filterRowEl.querySelectorAll(".filter-multi[open]"))
     .map((el) => el.dataset.key)
     .filter(Boolean);
+}
+
+function closeOpenFilterDropdowns() {
+  if (!filterRowEl || !state.openFilterKeys.length) return;
+  filterRowEl.querySelectorAll(".filter-multi[open]").forEach((detailsEl) => {
+    detailsEl.open = false;
+  });
+  state.openFilterKeys = [];
 }
 
 function syncToolbarState() {
@@ -1242,7 +1296,7 @@ function getActiveFilterChips(defs = []) {
       return {
         key: def.key,
         label: def.label,
-        value: selected.length === 1 ? selected[0] : `${selected.length} seleccionados`,
+        value: selected.join(", "),
       };
     })
     .filter(Boolean);
