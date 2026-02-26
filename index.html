@@ -69,7 +69,12 @@
           </div>
           <div class="menu-section">
             <p class="section-title">General</p>
-            <nav id="menu"></nav>
+            <nav id="menu" aria-label="Dashboards">
+              <button type="button" class="menu-item active" data-dashboard="ejecutivo">Informe Ejecutivo</button>
+              <button type="button" class="menu-item" data-dashboard="comercial">Informe Comercial</button>
+              <button type="button" class="menu-item" data-dashboard="logistica">Informe Logística</button>
+              <button type="button" class="menu-item" data-dashboard="rh">Informe Recursos Humanos</button>
+            </nav>
           </div>
         </div>
           <div class="sidebar-bottom">
@@ -126,7 +131,133 @@
         </header>
 
         <section id="filter-row" class="filter-row hidden"></section>
-        <section id="view" class="view"></section>
+        <section id="view" class="view">
+          <section class="score-grid skeleton-score-grid" aria-hidden="true">
+            <article class="score skeleton-score">
+              <div class="score-main">
+                <div class="skeleton-line sk-title"></div>
+                <div class="skeleton-line sk-value"></div>
+                <div class="skeleton-meta">
+                  <span class="skeleton-pill"></span>
+                  <span class="skeleton-line sk-meta"></span>
+                </div>
+              </div>
+            </article>
+            <article class="score skeleton-score">
+              <div class="score-main">
+                <div class="skeleton-line sk-title"></div>
+                <div class="skeleton-line sk-value"></div>
+                <div class="skeleton-meta">
+                  <span class="skeleton-pill"></span>
+                  <span class="skeleton-line sk-meta"></span>
+                </div>
+              </div>
+            </article>
+            <article class="score skeleton-score">
+              <div class="score-main">
+                <div class="skeleton-line sk-title"></div>
+                <div class="skeleton-line sk-value"></div>
+                <div class="skeleton-meta">
+                  <span class="skeleton-pill"></span>
+                  <span class="skeleton-line sk-meta"></span>
+                </div>
+              </div>
+            </article>
+            <article class="score skeleton-score">
+              <div class="score-main">
+                <div class="skeleton-line sk-title"></div>
+                <div class="skeleton-line sk-value"></div>
+                <div class="skeleton-meta">
+                  <span class="skeleton-pill"></span>
+                  <span class="skeleton-line sk-meta"></span>
+                </div>
+              </div>
+            </article>
+            <article class="score score-bundle skeleton-score skeleton-score-bundle">
+              <div class="score-main">
+                <div class="skeleton-line sk-title"></div>
+                <div class="skeleton-line sk-formula"></div>
+                <div class="score-bundle-grid">
+                  <div class="score-bundle-item skeleton-bundle-item">
+                    <div class="skeleton-line sk-bundle-label"></div>
+                    <div class="skeleton-line sk-bundle-value"></div>
+                    <div class="skeleton-meta"><span class="skeleton-pill"></span><span class="skeleton-line sk-meta"></span></div>
+                  </div>
+                  <div class="score-bundle-item skeleton-bundle-item">
+                    <div class="skeleton-line sk-bundle-label"></div>
+                    <div class="skeleton-line sk-bundle-value"></div>
+                    <div class="skeleton-meta"><span class="skeleton-pill"></span><span class="skeleton-line sk-meta"></span></div>
+                  </div>
+                  <div class="score-bundle-item skeleton-bundle-item">
+                    <div class="skeleton-line sk-bundle-label"></div>
+                    <div class="skeleton-line sk-bundle-value"></div>
+                    <div class="skeleton-meta"><span class="skeleton-pill"></span><span class="skeleton-line sk-meta"></span></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="score score-bundle skeleton-score skeleton-score-bundle">
+              <div class="score-main">
+                <div class="skeleton-line sk-title"></div>
+                <div class="skeleton-line sk-formula"></div>
+                <div class="score-bundle-grid">
+                  <div class="score-bundle-item skeleton-bundle-item">
+                    <div class="skeleton-line sk-bundle-label"></div>
+                    <div class="skeleton-line sk-bundle-value"></div>
+                    <div class="skeleton-meta"><span class="skeleton-pill"></span><span class="skeleton-line sk-meta"></span></div>
+                  </div>
+                  <div class="score-bundle-item skeleton-bundle-item">
+                    <div class="skeleton-line sk-bundle-label"></div>
+                    <div class="skeleton-line sk-bundle-value"></div>
+                    <div class="skeleton-meta"><span class="skeleton-pill"></span><span class="skeleton-line sk-meta"></span></div>
+                  </div>
+                  <div class="score-bundle-item skeleton-bundle-item">
+                    <div class="skeleton-line sk-bundle-label"></div>
+                    <div class="skeleton-line sk-bundle-value"></div>
+                    <div class="skeleton-meta"><span class="skeleton-pill"></span><span class="skeleton-line sk-meta"></span></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+          <section class="grid skeleton-grid" aria-hidden="true">
+            <article class="card span-12 skeleton-card skeleton-card-tall">
+              <div class="skeleton-line sk-card-title" style="width:62%"></div>
+              <div class="skeleton-line sk-card-sub" style="width:34%"></div>
+              <div class="skeleton-chart"></div>
+            </article>
+            <article class="card span-6 skeleton-card skeleton-card-tall">
+              <div class="skeleton-line sk-card-title" style="width:48%"></div>
+              <div class="skeleton-line sk-card-sub" style="width:31%"></div>
+              <div class="skeleton-chart"></div>
+            </article>
+            <article class="card span-6 skeleton-card skeleton-card-tall">
+              <div class="skeleton-line sk-card-title" style="width:55%"></div>
+              <div class="skeleton-line sk-card-sub" style="width:29%"></div>
+              <div class="skeleton-chart"></div>
+            </article>
+            <article class="card span-5 skeleton-card skeleton-card-table">
+              <div class="skeleton-line sk-card-title" style="width:57%"></div>
+              <div class="skeleton-line sk-card-sub" style="width:37%"></div>
+              <div class="skeleton-table">
+                <div class="skeleton-table-head">
+                  <span class="skeleton-line sk-th"></span><span class="skeleton-line sk-th"></span><span class="skeleton-line sk-th"></span><span class="skeleton-line sk-th"></span><span class="skeleton-line sk-th"></span>
+                </div>
+                <div class="skeleton-table-body">
+                  <div class="skeleton-table-row"><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span></div>
+                  <div class="skeleton-table-row"><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span></div>
+                  <div class="skeleton-table-row"><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span></div>
+                  <div class="skeleton-table-row"><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span><span class="skeleton-line sk-td"></span></div>
+                </div>
+              </div>
+            </article>
+            <article class="card span-7 skeleton-card skeleton-card-map">
+              <div class="skeleton-line sk-card-title" style="width:43%"></div>
+              <div class="skeleton-line sk-card-sub" style="width:27%"></div>
+              <div class="skeleton-chart"></div>
+            </article>
+          </section>
+        </section>
       </main>
     </div>
     <button

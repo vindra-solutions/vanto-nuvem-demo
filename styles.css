@@ -265,7 +265,7 @@
 }
 
 html.fonts-loading body {
-  visibility: hidden;
+  visibility: visible;
 }
 
 html.fonts-ready body {
@@ -1188,6 +1188,25 @@ select {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-line,
+.skeleton-pill,
+.skeleton-chart,
+.skeleton-table-row > span {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--surface-soft) 82%, var(--surface-card)) 15%,
+    color-mix(in srgb, var(--surface) 86%, white) 50%,
+    color-mix(in srgb, var(--surface-soft) 82%, var(--surface-card)) 85%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
 .score {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -1268,6 +1287,52 @@ select {
   background: color-mix(in srgb, var(--surface) 84%, white);
   padding: 8px;
   min-width: 0;
+}
+
+.skeleton-score {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.skeleton-score .score-main {
+  display: grid;
+  gap: 8px;
+}
+
+.skeleton-score .skeleton-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton-line {
+  display: block;
+  border-radius: 999px;
+  height: 11px;
+}
+
+.skeleton-pill {
+  display: inline-block;
+  width: 48px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.sk-title { width: 52%; height: 10px; }
+.sk-value { width: 74%; height: 22px; }
+.sk-meta { width: 34%; height: 10px; }
+.sk-formula { width: 62%; height: 9px; }
+.sk-bundle-label { width: 58%; height: 9px; }
+.sk-bundle-value { width: 78%; height: 16px; }
+
+.skeleton-score-bundle .score-bundle-item {
+  background: color-mix(in srgb, var(--surface) 84%, white);
+}
+
+.skeleton-bundle-item {
+  display: grid;
+  gap: 7px;
 }
 
 .bundle-label {
@@ -1371,6 +1436,73 @@ select {
   padding: 11px;
   display: flex;
   flex-direction: column;
+}
+
+.skeleton-grid {
+  margin-top: 10px;
+}
+
+.skeleton-card {
+  overflow: hidden;
+}
+
+.skeleton-card .sk-card-title {
+  height: 13px;
+  margin-bottom: 7px;
+}
+
+.skeleton-card .sk-card-sub {
+  height: 10px;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.skeleton-chart {
+  width: 100%;
+  min-height: 245px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 70%, white);
+  background-color: color-mix(in srgb, var(--surface) 86%, white);
+}
+
+.skeleton-card-tall .skeleton-chart {
+  min-height: 300px;
+}
+
+.skeleton-card-map .skeleton-chart {
+  min-height: 460px;
+}
+
+.skeleton-table {
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, white);
+  border-radius: 12px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--surface) 88%, white);
+}
+
+.skeleton-table-head,
+.skeleton-table-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.skeleton-table-head .sk-th {
+  height: 10px;
+  opacity: 0.9;
+}
+
+.skeleton-table-body {
+  display: grid;
+  gap: 7px;
+}
+
+.skeleton-table-row > span {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
 }
 
 .chart-fill-card {

@@ -178,6 +178,9 @@ const state = {
 const chartInstances = [];
 let layoutPassTimeout = null;
 let layoutPassRaf = null;
+let deferredRenderRafA = null;
+let deferredRenderRafB = null;
+let renderCycleToken = 0;
 const chartColors = {
   primary: "#006DA8",
   navy: "#005888",
@@ -712,12 +715,38 @@ function renderMenu() {
   });
 }
 
+function cancelDeferredRender() {
+  if (deferredRenderRafA) {
+    cancelAnimationFrame(deferredRenderRafA);
+    deferredRenderRafA = null;
+  }
+  if (deferredRenderRafB) {
+    cancelAnimationFrame(deferredRenderRafB);
+    deferredRenderRafB = null;
+  }
+}
+
 function render() {
   disposeCharts();
   titleEl.textContent = DASHBOARDS.find((d) => d.id === state.activeDashboard).label;
   syncToolbarState();
   renderFilterRow();
 
+  const token = ++renderCycleToken;
+  renderDashboardSkeleton(state.activeDashboard);
+  cancelDeferredRender();
+  deferredRenderRafA = requestAnimationFrame(() => {
+    deferredRenderRafA = null;
+    deferredRenderRafB = requestAnimationFrame(() => {
+      deferredRenderRafB = null;
+      if (token !== renderCycleToken) return;
+      renderDashboardContent();
+      scheduleLayoutPass();
+    });
+  });
+}
+
+function renderDashboardContent() {
   if (state.activeDashboard === "ejecutivo") {
     renderExecutive();
   }
@@ -730,8 +759,135 @@ function render() {
   if (state.activeDashboard === "rh") {
     renderHR();
   }
+}
 
-  scheduleLayoutPass();
+function renderDashboardSkeleton(dashboardId) {
+  viewEl.innerHTML = `
+    ${dashboardScoreSkeletonHTML()}
+    <section class="grid skeleton-grid" aria-hidden="true">
+      ${dashboardCardSkeletonsHTML(dashboardId)}
+    </section>
+  `;
+}
+
+function dashboardScoreSkeletonHTML() {
+  return `
+    <section class="score-grid skeleton-score-grid" aria-hidden="true">
+      ${Array.from({ length: 4 }, () => scoreSkeletonHTML()).join("")}
+      ${scoreBundleSkeletonHTML()}
+      ${scoreBundleSkeletonHTML()}
+    </section>
+  `;
+}
+
+function scoreSkeletonHTML() {
+  return `
+    <article class="score skeleton-score">
+      <div class="score-main">
+        <div class="skeleton-line sk-title"></div>
+        <div class="skeleton-line sk-value"></div>
+        <div class="skeleton-meta">
+          <span class="skeleton-pill"></span>
+          <span class="skeleton-line sk-meta"></span>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function scoreBundleSkeletonHTML() {
+  return `
+    <article class="score score-bundle skeleton-score skeleton-score-bundle">
+      <div class="score-main">
+        <div class="skeleton-line sk-title"></div>
+        <div class="skeleton-line sk-formula"></div>
+        <div class="score-bundle-grid">
+          ${Array.from({ length: 3 }, () => `
+            <div class="score-bundle-item skeleton-bundle-item">
+              <div class="skeleton-line sk-bundle-label"></div>
+              <div class="skeleton-line sk-bundle-value"></div>
+              <div class="skeleton-meta">
+                <span class="skeleton-pill"></span>
+                <span class="skeleton-line sk-meta"></span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function dashboardCardSkeletonsHTML(dashboardId) {
+  const layouts = {
+    ejecutivo: [
+      { span: "span-12", chart: "tall" },
+      { span: "span-6", chart: "tall" },
+      { span: "span-6", chart: "tall" },
+      { span: "span-5", chart: "table" },
+      { span: "span-7", chart: "map" },
+    ],
+    comercial: [
+      { span: "span-5", chart: "base" },
+      { span: "span-7", chart: "base" },
+      { span: "span-6", chart: "tall" },
+      { span: "span-6", chart: "tall" },
+      { span: "span-7", chart: "table" },
+      { span: "span-5", chart: "table" },
+      { span: "span-12", chart: "table" },
+    ],
+    logistica: [
+      { span: "span-8", chart: "base" },
+      { span: "span-4", chart: "base" },
+      { span: "span-6", chart: "base" },
+      { span: "span-6", chart: "base" },
+      { span: "span-4", chart: "table" },
+      { span: "span-8", chart: "base" },
+      { span: "span-7", chart: "table" },
+      { span: "span-5", chart: "base" },
+    ],
+    rh: [
+      { span: "span-6", chart: "base" },
+      { span: "span-6", chart: "base" },
+      { span: "span-7", chart: "base" },
+      { span: "span-5", chart: "base" },
+      { span: "span-4", chart: "base" },
+      { span: "span-8", chart: "base" },
+      { span: "span-12", chart: "table" },
+    ],
+  };
+
+  const cards = layouts[dashboardId] || layouts.ejecutivo;
+  return cards.map((card) => cardSkeletonHTML(card)).join("");
+}
+
+function cardSkeletonHTML(card) {
+  const titleWidth = 40 + Math.round(Math.random() * 28);
+  const subWidth = 28 + Math.round(Math.random() * 24);
+  return `
+    <article class="card ${card.span} skeleton-card skeleton-card-${card.chart}">
+      <div class="skeleton-line sk-card-title" style="width:${titleWidth}%"></div>
+      <div class="skeleton-line sk-card-sub" style="width:${subWidth}%"></div>
+      ${card.chart === "table" ? tableSkeletonHTML() : `<div class="skeleton-chart"></div>`}
+    </article>
+  `;
+}
+
+function tableSkeletonHTML() {
+  return `
+    <div class="skeleton-table">
+      <div class="skeleton-table-head">
+        ${Array.from({ length: 5 }, () => `<span class="skeleton-line sk-th"></span>`).join("")}
+      </div>
+      <div class="skeleton-table-body">
+        ${Array.from({ length: 5 }, () => `
+          <div class="skeleton-table-row">
+            ${Array.from({ length: 5 }, () => `<span class="skeleton-line sk-td"></span>`).join("")}
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
 }
 
 function renderFilterRow() {
